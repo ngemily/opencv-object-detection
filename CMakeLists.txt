@@ -24,7 +24,11 @@ if(CMAKE_VERSION VERSION_LESS "2.8.11")
 endif()
 
 # Declare the executable target built from your sources
-add_executable(DisplayImage main.cpp)
+file(GLOB SRC
+    "*.h"
+    "*.cpp"
+)
+add_executable(DisplayImage ${SRC})
 
 # Link your application with OpenCV libraries
 target_link_libraries(DisplayImage ${OpenCV_LIBS})
