@@ -86,7 +86,7 @@ void rgb2g(Mat &src, Mat &dst)
  * @param dst       dest image
  * @param kernel    kernel
  */
-void applyKernel(InputArray src, OutputArray dst, InputArray kernel)
+void applyKernel(Mat &src, Mat &dst, Mat &kernel)
 {
     DLOG("kernel %d x %d\n", kernel.size().width, kernel.size().height);
     DLOG("src    %d x %d\n", src.size().width, src.size().height);
@@ -96,10 +96,46 @@ void applyKernel(InputArray src, OutputArray dst, InputArray kernel)
     const int cols = src.size().width;
     const int num_channels = src.channels();
 
-    int i, j, k;
-    for (int i = 1; i < rows - 1; i++) {
-        for (int j = num_channels; j < num_channels * (cols - 1); j++) {
+    assert(kernel.isContinuous());
+    assert(src.isContinuous());
+
+    dst = Mat::zeros(rows, cols, src.type());
+
+    assert(dst.isContinuous());
+
+    int i, j;
+
+    DLOG("Kernel:\n");
+    const char *k = (char *)kernel.data;
+    for (i = 0; i < kernel.rows * kernel.cols; i++) {
+        printf("%4d ", k[i]);
+        if (i % 3 == 2)
+            printf("\n");
+    }
+
+    const int len_row = cols * num_channels;
+    for (i = 1; i < rows - 1; i++) {
+        for (j = num_channels; j < num_channels * (cols - 1); j++) {
             // compute convolution for this pixel
+            //
+            // assume 3x3 kernel for now
+
+            // OpenCV seems to reverse mapping between kernel and image.
+            const uchar *p = &src.data[i * len_row + j];
+            int pixel =
+                  k[0] * p[+num_channels - len_row]
+                + k[1] * p[0 - len_row]
+                + k[2] * p[-num_channels - len_row]
+
+                + k[3] * p[+num_channels]
+                + k[4] * p[0]
+                + k[5] * p[-num_channels]
+
+                + k[6] * p[+num_channels + len_row]
+                + k[7] * p[0 + len_row]
+                + k[8] * p[-num_channels + len_row]
+                ;
+            dst.data[i * len_row + j] = saturate_cast<uchar>(pixel);
         }
     }
 }

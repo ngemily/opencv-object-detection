@@ -16,6 +16,6 @@ using namespace cv;
 
 unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B);
 void rgb2g(Mat &src, Mat &dst);
-void applyKernel(InputArray src, OutputArray dst, InputArray kernel);
+void applyKernel(Mat &src, Mat &dst, Mat &kernel);
 
 #endif
