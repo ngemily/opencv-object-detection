@@ -15,6 +15,8 @@
 /** Compute sum of absolute value of differences of each pixel in two images.
  *
  * Images A and B must be of the same size, same depth, same number of channels.
+ * Slight hack, ignore border pixels for purposes of comparing filtered images
+ * with undefined behaviour at borders.
  *
  * @param A     reference to one image
  * @param B     reference to another image
@@ -30,16 +32,18 @@ unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B)
 
     int rows = A.rows;
     int cols = A.cols;
+    int num_channels = A.channels();
 
-    for (i = 0; i < rows; i++) {
-        for (j = 0; j < cols; j++) {
-            int d = A.data[i * cols + j] - B.data[i * cols + j];
+    for (i = 1; i < rows - 1; i++) {
+        for (j = num_channels; j < num_channels * (cols - 1); j++) {
+            int d = A.data[i * cols * num_channels + j]
+                - B.data[i * cols * num_channels + j];
             sum += abs(d);
         }
     }
 
-    printf("%f\n", sum / (float) (rows * cols));
-    return (int)sum;
+    DLOG("absdiff %f\n", sum / (float) (rows * cols * num_channels));
+    return sum;
 }
 
 /** @brief Convert color image to gray image.
