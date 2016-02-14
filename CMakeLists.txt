@@ -25,8 +25,8 @@ endif()
 
 # Declare the executable target built from your sources
 file(GLOB SRC
-    "*.h"
-    "*.cpp"
+    "src/*.h"
+    "src/*.cpp"
 )
 add_executable(DisplayImage ${SRC})
 
