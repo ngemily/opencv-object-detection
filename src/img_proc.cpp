@@ -136,7 +136,7 @@ void applyKernel(Mat &src, Mat &dst, const Mat &kernel)
                 + k[7] * p[0 + len_row]
                 + k[8] * p[+num_channels + len_row]
                 ;
-            dst.data[i * len_row + j] = saturate_cast<uchar>(pixel);
+            dst.data[i * len_row + j] = saturate_cast<uchar>(abs(pixel));
         }
     }
 }
