@@ -1,5 +1,5 @@
 /**
- * @file img_proc.c
+ * @file img_proc.cpp
  * @author Emily Ng
  * @date Feb 11 2016
  * @brief Image processing functions written to implement OpenCV functionality
