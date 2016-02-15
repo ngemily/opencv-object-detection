@@ -1,9 +1,9 @@
 /**
+ * Image processing functions written to implement OpenCV functionality in C.
+ *
  * @file img_proc.cpp
  * @author Emily Ng
  * @date Feb 11 2016
- * @brief Image processing functions written to implement OpenCV functionality
- * in more C like programming.
  */
 
 #include <assert.h>

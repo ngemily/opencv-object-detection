@@ -1,8 +1,9 @@
 /**
+ * OpenCV prototype of edge detection.
+ *
  * @file main.c
  * @author Emily Ng
  * @date Feb 11 2016
- * @brief OpenCV prototype of edge detection
  */
 
 #include <assert.h>
