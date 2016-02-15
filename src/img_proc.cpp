@@ -141,3 +141,43 @@ void applyKernel(Mat &src, Mat &dst, const Mat &kernel)
     }
 }
 
+/** Combine two images into a third, by a given function.
+ *
+ * Each pixel in C is calculated as a function of the corresponding pixel in A
+ * and in B.  The combining function should accept two numbers and return a
+ * number.
+
+ * @param A     Source image.
+ * @param B     Source image.
+ * @param C     Dest image.
+ * @param func  Pointer to combining function.
+ */
+void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b))
+{
+    assert(A.depth() == B.depth());
+    assert(A.channels() == B.channels());
+    assert(A.rows == B.rows && A.cols == B.cols);
+
+    assert(A.isContinuous());
+    assert(B.isContinuous());
+
+    const int rows = A.rows;
+    const int cols = A.cols;
+    const int num_channels = A.channels();
+
+    C = Mat::zeros(rows, cols, A.type());
+
+    assert(C.isContinuous());
+
+    int i, j, idx=0;;
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols * num_channels; j++) {
+            uchar a = A.data[idx];
+            uchar b = B.data[idx];
+            int p = fp(a, b);
+
+            C.data[idx] = saturate_cast<uchar>(p);
+            idx++;
+        }
+    }
+}
