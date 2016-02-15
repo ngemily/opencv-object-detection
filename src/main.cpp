@@ -12,8 +12,9 @@
 
 #include "debug.h"
 #include "img_proc.h"
+#include "kernel.h"
 
-#define DISP 0          // Toggle display of images.
+#define DISP 1          // Toggle display of images.
 #define PADDING 20      // Padding between images.
 
 using namespace cv;
@@ -23,7 +24,6 @@ int main(int argc, char** argv )
     Mat src;                    // Load source image.
     Mat src_gray, src_filter;   // Computed by OpenCV.
     Mat dst_gray, dst_filter;   // Computed by program.
-    Mat kern_sharpen, kern_sobel;
 
     // Check args
     if (argc != 2) {
@@ -40,32 +40,22 @@ int main(int argc, char** argv )
 
     // Convert to grayscale
     rgb2g(src, dst_gray);
-    src_gray = imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
+    cvtColor(src, src_gray, CV_BGR2GRAY, 0);
 
     // Compare opencv grayscale to our own grayscale
     unsigned int diff = sumOfAbsoluteDifferences(src_gray, dst_gray);
     DLOG("gray abs diff %u\n", diff);
 
-    // Create kernel and apply to input image.
-    kern_sharpen = (Mat_<char>(3, 3) <<
-         0, -1,  0,
-        -1,  5, -1,
-         0, -1,  0);
-
-    kern_sobel = (Mat_<char>(3, 3) <<
-        -1, -2, -1,
-         0,  0,  0,
-         1,  2,  1);
-
-    applyKernel(src, dst_filter, kern_sobel);
-    filter2D(src, src_filter, src.depth(), kern_sobel);
+    // Apply kernel to input image.
+    applyKernel(src, dst_filter, kern_sobel_x);
+    filter2D(src, src_filter, src.depth(), kern_sobel_x);
 
     // Compare opencv filter to our own filter
     diff = sumOfAbsoluteDifferences(src_filter, dst_filter);
     DLOG("filter abs diff %u\n", diff);
 
 
-
+    // Display results
     const int X_INC = src.cols + PADDING;
     const int Y_INC = src.rows + 3 * PADDING;
     int x=0, y=0;
