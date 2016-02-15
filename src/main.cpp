@@ -13,9 +13,7 @@
 #include "debug.h"
 #include "img_proc.h"
 #include "kernel.h"
-
-#define DISP 1          // Toggle display of images.
-#define PADDING 20      // Padding between images.
+#include "utils.h"
 
 using namespace cv;
 
@@ -56,45 +54,11 @@ int main(int argc, char** argv )
 
 
     // Display results
-    const int X_INC = src.cols + PADDING;
-    const int Y_INC = src.rows + 3 * PADDING;
-    int x=0, y=0;
+    displayImagePair("Source", src, src);
+    displayImagePair("Gray", src_gray, dst_gray);
+    displayImagePair("Filter", src_filter, dst_filter);
 
-    if (DISP) {
-        // Display original image.
-        namedWindow("Source Image", WINDOW_AUTOSIZE );
-        imshow("Source Image", src);
-        moveWindow("Source Image", x, y);
-        y += Y_INC;
-
-        // Display OpenCV grayscale image.
-        namedWindow("OpenCV Gray Image", WINDOW_AUTOSIZE );
-        imshow("OpenCV Gray Image", src_gray);
-        moveWindow("OpenCV Gray Image", x, y);
-        x += X_INC;
-
-        // Display grayscale image.
-        namedWindow("Gray Image", WINDOW_AUTOSIZE );
-        imshow("Gray Image", dst_gray);
-        moveWindow("Gray Image", x, y);
-        x = 0;
-        y += Y_INC;
-
-        // Display OpenCV filtered image.
-        namedWindow("OpenCV Filtered Image", WINDOW_AUTOSIZE );
-        imshow("OpenCV Filtered Image", src_filter);
-        moveWindow("OpenCV Filtered Image", x, y);
-        x += X_INC;
-
-        // Display filtered image.
-        namedWindow("Filtered Image", WINDOW_AUTOSIZE );
-        imshow("Filtered Image", dst_filter);
-        moveWindow("Filtered Image", x, y);
-        x = 0;
-        y += Y_INC;
-
-        waitKey(0);
-    }
+    waitKey(0);
 
     return 0;
 }
