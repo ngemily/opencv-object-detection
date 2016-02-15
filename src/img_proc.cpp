@@ -87,7 +87,7 @@ void rgb2g(Mat &src, Mat &dst)
  * @param dst       dest image
  * @param kernel    kernel
  */
-void applyKernel(Mat &src, Mat &dst, Mat &kernel)
+void applyKernel(Mat &src, Mat &dst, const Mat &kernel)
 {
     DLOG("kernel %d x %d\n", kernel.size().width, kernel.size().height);
     DLOG("src    %d x %d\n", src.size().width, src.size().height);
@@ -124,17 +124,17 @@ void applyKernel(Mat &src, Mat &dst, Mat &kernel)
             // OpenCV seems to reverse mapping between kernel and image.
             const uchar *p = &src.data[i * len_row + j];
             int pixel =
-                  k[0] * p[+num_channels - len_row]
+                  k[0] * p[-num_channels - len_row]
                 + k[1] * p[0 - len_row]
-                + k[2] * p[-num_channels - len_row]
+                + k[2] * p[+num_channels - len_row]
 
-                + k[3] * p[+num_channels]
+                + k[3] * p[-num_channels]
                 + k[4] * p[0]
-                + k[5] * p[-num_channels]
+                + k[5] * p[+num_channels]
 
-                + k[6] * p[+num_channels + len_row]
+                + k[6] * p[-num_channels + len_row]
                 + k[7] * p[0 + len_row]
-                + k[8] * p[-num_channels + len_row]
+                + k[8] * p[+num_channels + len_row]
                 ;
             dst.data[i * len_row + j] = saturate_cast<uchar>(pixel);
         }
