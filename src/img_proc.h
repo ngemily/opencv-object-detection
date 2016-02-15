@@ -8,7 +8,7 @@
 #include "debug.h"
 
 // weights for RGB to grayscale conversion
-#define R_WEIGHT (0.2989)
+#define R_WEIGHT (0.2990)
 #define G_WEIGHT (0.5870)
 #define B_WEIGHT (0.1140)
 

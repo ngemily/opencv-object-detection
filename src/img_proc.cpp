@@ -72,9 +72,10 @@ void rgb2g(Mat &src, Mat &dst)
             int src_idx = i * cols * num_channels + j * num_channels;
 
             // NB: endianness causes RGB to be stored as BGR
-            dst.data[i * cols + j] = B_WEIGHT * src.data[src_idx]
+            dst.data[i * cols + j] = saturate_cast<uchar>(
+                B_WEIGHT * src.data[src_idx]
                 + G_WEIGHT * src.data[src_idx + 1]
-                + R_WEIGHT * src.data[src_idx + 2];
+                + R_WEIGHT * src.data[src_idx + 2]);
         }
     }
 
