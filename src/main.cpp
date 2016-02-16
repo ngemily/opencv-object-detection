@@ -47,19 +47,17 @@ int main(int argc, char** argv )
 
     // Apply kernel to input image.
     Mat dst_x, dst_y;
-    // NB: Applying kernel without changing to signed depth (e.g. CV_16S)
-    // causes Sobel operator to miss all right edges.
     applyKernel(src, dst_x, kern_sobel_x);
     applyKernel(src, dst_y, kern_sobel_y);
     combine(dst_x, dst_y, dst_filter, &hypoteneuse);
     threshold(dst_filter, dst_filter, 150, 255, THRESH_BINARY);
 
+    // OpenCV Sobel
     Mat tmp_x, tmp_y;
-    filter2D(src, tmp_x, CV_16S, kern_sobel_x);
-    filter2D(src, tmp_y, CV_16S, kern_sobel_y);
-    convertScaleAbs(tmp_x, tmp_x);
-    convertScaleAbs(tmp_y, tmp_y);
-    addWeighted(tmp_x, 0.5, tmp_y, 0.5, 0, src_filter);
+    filter2D(src, tmp_x, CV_16S, kern_sobel_x);     // x derivative
+    filter2D(src, tmp_y, CV_16S, kern_sobel_y);     // y derivative
+    addWeighted(tmp_x, 0.5, tmp_y, 0.5, 0, src_filter); // combine
+    convertScaleAbs(src_filter, src_filter);        // back to CV_8U
     threshold(src_filter, src_filter, 150, 255, THRESH_BINARY);
 
     // Compare opencv filter to our own filter
