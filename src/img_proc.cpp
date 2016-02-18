@@ -7,6 +7,7 @@
  */
 
 #include <assert.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -316,4 +317,84 @@ end:
             src.data[idx] = BLACK;
         }
     }
+}
+
+struct _moment imageMoments(Mat &src)
+{
+    DLOG("src    %d x %d\n", src.size().width, src.size().height);
+
+    const int rows = src.rows;
+    const int cols = src.cols;
+
+    struct _moment m;
+
+    m.m00 = 0;
+    m.m01 = 0;
+    m.m10 = 0;
+    m.u02 = 0;
+    m.u03 = 0;
+    m.u11 = 0;
+    m.u12 = 0;
+    m.u21 = 0;
+    m.u02 = 0;
+    m.u03 = 0;
+
+    int i, j, idx=0;
+
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols; j++) {
+            m.m00 += src.data[idx];
+            m.m01 += i * src.data[idx];
+            m.m10 += j * src.data[idx];
+            idx++;
+        }
+    }
+
+    const float x_bar = m.m10 / m.m00;
+    const float y_bar = m.m01 / m.m00;
+
+    idx=0;
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols; j++) {
+            const float x_dist = j - x_bar;
+            const float y_dist = i - y_bar;
+
+            m.u02 += pow(y_dist, 2) * src.data[idx];
+            m.u03 += pow(y_dist, 3) * src.data[idx];
+            m.u11 += x_dist * y_dist * src.data[idx];
+            m.u12 += x_dist * pow(y_dist, 2) * src.data[idx];
+            m.u21 += pow(x_dist, 2) * y_dist * src.data[idx];
+            m.u20 += pow(x_dist, 2) * src.data[idx];
+            m.u30 += pow(x_dist, 3) * src.data[idx];
+
+            idx++;
+        }
+    }
+
+    // n_ij = u_ij / (m_00 ^ (1 + (i + j) / 2))
+    m.n02 = m.u02 / pow(m.m00, 1 + (0 + 2) / 2.0);
+    m.n03 = m.u03 / pow(m.m00, 1 + (0 + 3) / 2.0);
+    m.n11 = m.u11 / pow(m.m00, 1 + (1 + 1) / 2.0);
+    m.n12 = m.u12 / pow(m.m00, 1 + (1 + 2) / 2.0);
+    m.n20 = m.u20 / pow(m.m00, 1 + (2 + 0) / 2.0);
+    m.n21 = m.u21 / pow(m.m00, 1 + (2 + 1) / 2.0);
+    m.n30 = m.u30 / pow(m.m00, 1 + (3 + 0) / 2.0);
+
+    m.hu[0] = m.n20 + m.n02;
+    m.hu[1] = pow(m.n20 - m.n02, 2) + 4 * pow(m.n11, 2);
+    m.hu[2] = pow(m.n30 - 3 * m.n12, 2) + pow(3 * m.n21 - m.n03, 2);
+    m.hu[3] = pow(m.n30 + m.n12, 2) + pow(m.n21 + m.n03, 2);
+    m.hu[4] = (m.n30 - 3 * m.n12) * (m.n30 + m.n12)
+        * (pow(m.n30 + m.n12, 2) - 3 * pow(m.n21 + m.n03, 2))
+        + (3 * m.n21 - m.n03) * (m.n21 + m.n03)
+        * (3 * pow(m.n30 - m.n12, 2) - pow(m.n21 + m.n03, 2));
+    m.hu[5] = (m.n20 - m.n02)
+        * (pow(m.n30 + m.n12, 2) - pow(m.n21 + m.n03, 2))
+        + 4 * m.n11 * (m.n30 + m.n12) * (m.n21 + m.n03);
+    m.hu[6] = (3 * m.n21 - m.n03) * (m.n30 + m.n12)
+        * (pow(m.n30 + m.n12, 2) - 3 * pow(m.n21 + m.n03, 2))
+        - (m.n30 - 3 * m.n12) * (m.n21 + m.n03)
+        * (3 * pow(m.n30 + m.n12, 2) - pow(m.n21 + m.n03, 2));
+
+    return m;
 }

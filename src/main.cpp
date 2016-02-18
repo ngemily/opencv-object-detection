@@ -68,13 +68,44 @@ int main(int argc, char** argv )
     threshold(src_obj, src_obj, 50, 255, THRESH_BINARY);
     Moments m = moments(src_obj, false);
     HuMoments(m, hu);
-
     tmp = src_obj.clone();
-    DLOG("%.0f %.0f %.0f\n", m.m00, m.m01 / m.m00, m.m10 / m.m00);
+
+    _moment _m = imageMoments(src_obj);
+    double *_hu = (double *)&_m.hu;
+
+    DLOG("Image moments\n");
+    DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
+    DLOG("%10s %12.0f %12.0f\n", "m00", m.m00, _m.m00);
+    DLOG("%10s %12.3f %12.3f\n", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
+    DLOG("%10s %12.3f %12.3f\n", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
+    DLOG("\n");
+    DLOG("%10s %12e %12e\n", "u02", m.mu02, _m.u02);
+    DLOG("%10s %12e %12e\n", "u03", m.mu03, _m.u03);
+    DLOG("%10s %12e %12e\n", "u11", m.mu11, _m.u11);
+    DLOG("%10s %12e %12e\n", "u12", m.mu12, _m.u12);
+    DLOG("%10s %12e %12e\n", "u21", m.mu21, _m.u21);
+    DLOG("%10s %12e %12e\n", "u20", m.mu20, _m.u20);
+    DLOG("%10s %12e %12e\n", "u30", m.mu30, _m.u30);
+    DLOG("\n");
+    DLOG("%10s %12.8f %12.8f\n", "u02", m.nu02, _m.n02);
+    DLOG("%10s %12.8f %12.8f\n", "u03", m.nu03, _m.n03);
+    DLOG("%10s %12.8f %12.8f\n", "u11", m.nu11, _m.n11);
+    DLOG("%10s %12.8f %12.8f\n", "u12", m.nu12, _m.n12);
+    DLOG("%10s %12.8f %12.8f\n", "u21", m.nu21, _m.n21);
+    DLOG("%10s %12.8f %12.8f\n", "u20", m.nu20, _m.n20);
+    DLOG("%10s %12.8f %12.8f\n", "u30", m.nu30, _m.n30);
+    DLOG("\n");
+    DLOG("%10s %12.8f %12.8f\n", "hu[0]", hu[0], _hu[0]);
+    DLOG("%10s %12.8f %12.8f\n", "hu[1]", hu[1], _hu[1]);
+    DLOG("%10s %12.8f %12.8f\n", "hu[2]", hu[2], _hu[2]);
+    DLOG("%10s %12.8f %12.8f\n", "hu[3]", hu[3], _hu[3]);
+    DLOG("%10s %12.8f %12.8f\n", "hu[4]", hu[4], _hu[4]);
+    DLOG("%10s %12.8f %12.8f\n", "hu[5]", hu[5], _hu[5]);
+    DLOG("%10s %12.8f %12.8f\n", "hu[6]", hu[6], _hu[6]);
 
     dst_obj = src_obj.clone();
     for (int i = 0; i < 20; i++) {
-        extractObject(src_obj, dst_obj);
+        //extractObject(src_obj, dst_obj);
     }
 
     for (int i = 0; i < 7; i++) {
