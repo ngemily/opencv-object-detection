@@ -104,9 +104,13 @@ int main(int argc, char** argv )
     DLOG("%10s %12.8f %12.8f\n", "hu[6]", hu[6], _hu[6]);
 
     dst_obj = src_obj.clone();
-    for (int i = 0; i < 20; i++) {
-        //extractObject(src_obj, dst_obj);
+    struct rect r;
+    for (int i = 0; i < 1; i++) {
+        r = extractObject(src_obj, dst_obj);
     }
+
+    Mat obj = src(Range(r.top, r.bottom), Range(r.left, r.right));
+    DLOG("obj is %d x %d\n", obj.cols, obj.rows);
 
     for (int i = 0; i < 7; i++) {
         printf("%f ", hu[i]);
@@ -119,7 +123,7 @@ int main(int argc, char** argv )
 
 
     // Display results
-    displayImagePair("BB", src_obj, dst_obj);
+    displayImagePair("Extract obj", dst_obj, obj);
     //displayImagePair("Source", src, tmp);
     //displayImagePair("Gray", src_gray, dst_gray);
     //displayImagePair("Filter", src, dst_filter);

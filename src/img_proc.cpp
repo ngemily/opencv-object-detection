@@ -195,7 +195,7 @@ void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b))
  * @param src   Binary grayscale image of contours
  * @param dst   Bounding corners drawn.
  */
-void extractObject(Mat &src, Mat &dst)
+struct rect extractObject(Mat &src, Mat &dst)
 {
     const int rows = src.rows;
     const int cols = src.cols;
@@ -209,6 +209,8 @@ void extractObject(Mat &src, Mat &dst)
 
     int start_x, start_y;
     int top, left, bottom, right;
+
+    struct rect r = (struct rect) {0, 0, 0, 0};
 
     // Find first pixel
     int i=0, j=0, idx=0;;
@@ -224,7 +226,7 @@ void extractObject(Mat &src, Mat &dst)
 
             if (i == rows && j == cols) {
                 DLOG("empty image\n");
-                return;
+                return r;
             }
             idx++;
         }
@@ -317,6 +319,15 @@ end:
             src.data[idx] = BLACK;
         }
     }
+
+    r.top = top;
+    r.bottom = bottom;
+    r.left = left;
+    r.right = right;
+
+    DLOG("obj is %d x %d\n", r.right - r.left, r.bottom - r.top);
+
+    return r;
 }
 
 struct _moment imageMoments(Mat &src)

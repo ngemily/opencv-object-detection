@@ -46,11 +46,18 @@ struct _moment{
     double hu[7];
 };
 
+struct rect {
+    int top;
+    int bottom;
+    int left;
+    int right;
+};
+
 unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B);
 void rgb2g(Mat &src, Mat &dst);
 void applyKernel(Mat &src, Mat &dst, const Mat &kernel);
 void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b));
-void extractObject(Mat &src, Mat &dst);
+struct rect extractObject(Mat &src, Mat &dst);
 struct _moment imageMoments(Mat &src);
 
 #endif
