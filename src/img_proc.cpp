@@ -181,3 +181,139 @@ void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b))
         }
     }
 }
+
+/**
+ * Extract a single contour from an image of many contours.
+ *
+ * Modifies src by erasing the image that it finds.  Modifies dst by drawing
+ * lines that go out from the start pixel to the top-left and bottom-right
+ * corners.
+ *
+ * Only identifies connected contours.  Contour may have holes in it.
+ *
+ * @param src   Binary grayscale image of contours
+ * @param dst   Bounding corners drawn.
+ */
+void extractObject(Mat &src, Mat &dst)
+{
+    const int rows = src.rows;
+    const int cols = src.cols;
+
+    assert(src.channels() == 1);
+
+    assert(src.isContinuous());
+    assert(dst.isContinuous());
+
+    DLOG("src    %d x %d\n", src.size().width, src.size().height);
+
+    int start_x, start_y;
+    int top, left, bottom, right;
+
+    // Find first pixel
+    int i=0, j=0, idx=0;;
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols; j++) {
+            if (src.data[idx] == WHITE) {
+                dst.data[idx] = WHITE;
+                start_x = j;
+                start_y = i;
+                DLOG("start pixel (%d, %d)\n", i, j);
+                goto find_bottom_right;
+            }
+
+            if (i == rows && j == cols) {
+                DLOG("empty image\n");
+                return;
+            }
+            idx++;
+        }
+    }
+
+    // Inch forwards diagonally until no more pixels
+find_bottom_right:
+    j+=10; i+=10;
+    for (;;) {
+        // if (no white pixels in row i or col j) return;
+
+        int found_pixel = 0;
+        // check col j
+        for (int ii = 0; ii < i; ii++) {
+            if (src.data[ii * cols + j] == WHITE) {
+                dst.data[i * cols + j] = WHITE;
+                found_pixel = 1;
+                j++;
+                break;
+            }
+        }
+
+        // check row i
+        for (int jj = 0; jj < j; jj++) {
+            if (src.data[i * cols + jj] == WHITE) {
+                dst.data[i * cols + j] = WHITE;
+                found_pixel = 1;
+                i++;
+                break;
+            }
+        }
+
+        if (!found_pixel || i == rows || j == cols) {
+            dst.data[i * cols + j] = WHITE;
+            DLOG("bottom right (%d, %d)\n", i, j);
+            bottom = i;
+            right = j;
+            goto find_top_left;
+        }
+
+    }
+
+find_top_left:
+    j = start_x;
+    i = start_y;
+
+    for (;;) {
+        // if (no white pixels in row i or col j) return;
+
+        int found_pixel = 0;
+        // check col j
+        for (int ii = bottom; ii >= i; ii--) {
+            if (src.data[ii * cols + j] == WHITE) {
+                dst.data[i * cols + j] = WHITE;
+                found_pixel = 1;
+                j--;
+                break;
+            }
+        }
+
+        // check row i
+        for (int jj = right; jj >= j; jj--) {
+            if (src.data[i * cols + jj] == WHITE) {
+                dst.data[i * cols + j] = WHITE;
+                found_pixel = 1;
+                i--;
+                break;
+            }
+        }
+
+        if (i == 0 || j == 0) {
+            DLOG("out of image\n");
+        }
+        if (!found_pixel || i == 0 || j == 0) {
+            dst.data[i * cols + j] = WHITE;
+            DLOG("top left (%d, %d)\n", i, j);
+            top = i;
+            left = j;
+            goto end;
+        }
+
+    }
+
+
+end:
+    // Erase from src image.
+    for (int ii = top; ii < bottom; ii++) {
+        for (int jj = left; jj < right; jj++) {
+            idx = ii * cols + jj;
+            src.data[idx] = BLACK;
+        }
+    }
+}

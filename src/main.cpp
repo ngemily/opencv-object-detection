@@ -60,15 +60,38 @@ int main(int argc, char** argv )
     convertScaleAbs(src_filter, src_filter);        // back to CV_8U
     threshold(src_filter, src_filter, 150, 255, THRESH_BINARY);
 
+    // Isolate objects
+    Mat tmp, src_obj, dst_obj;
+    double hu[7];
+
+    cvtColor(dst_filter, src_obj, CV_BGR2GRAY, 0);
+    threshold(src_obj, src_obj, 50, 255, THRESH_BINARY);
+    Moments m = moments(src_obj, false);
+    HuMoments(m, hu);
+
+    tmp = src_obj.clone();
+    DLOG("%.0f %.0f %.0f\n", m.m00, m.m01 / m.m00, m.m10 / m.m00);
+
+    dst_obj = src_obj.clone();
+    for (int i = 0; i < 20; i++) {
+        extractObject(src_obj, dst_obj);
+    }
+
+    for (int i = 0; i < 7; i++) {
+        printf("%f ", hu[i]);
+    }
+    printf("\n");
+
     // Compare opencv filter to our own filter
     diff = sumOfAbsoluteDifferences(src_filter, dst_filter);
     DLOG("filter abs diff %u\n", diff);
 
 
     // Display results
-    displayImagePair("Source", src, src);
-    displayImagePair("Gray", src_gray, dst_gray);
-    displayImagePair("Filter", src_filter, dst_filter);
+    displayImagePair("BB", src_obj, dst_obj);
+    //displayImagePair("Source", src, tmp);
+    //displayImagePair("Gray", src_gray, dst_gray);
+    displayImagePair("Filter", src, dst_filter);
 
     waitKey(0);
 
