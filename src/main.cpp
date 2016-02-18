@@ -21,8 +21,6 @@ using namespace cv;
 int main(int argc, char** argv )
 {
     Mat src;                    // Load source image.
-    Mat src_gray, src_filter;   // Computed by OpenCV.
-    Mat dst_gray, dst_filter;   // Computed by program.
 
     // Check args
     if (argc != 2) {
@@ -37,22 +35,27 @@ int main(int argc, char** argv )
         return -1;
     }
 
-    // Convert to grayscale
-    rgb2g(src, dst_gray);
-    cvtColor(src, src_gray, CV_BGR2GRAY, 0);
+    /*****      Convert to grayscale     *******/
+    Mat src_gray, dst_gray;
 
-    // Compare opencv grayscale to our own grayscale
+    rgb2g(src, dst_gray);                       // ours
+    cvtColor(src, src_gray, CV_BGR2GRAY, 0);    // OpencV
+
+    // Compare
     unsigned int diff = sumOfAbsoluteDifferences(src_gray, dst_gray);
     DLOG("gray abs diff %u\n", diff);
 
-    // Apply kernel to input image.
+    /*****      Sobel edge detection     *******/
+    Mat src_filter, dst_filter;
+
+    // Ours
     Mat dst_x, dst_y;
     applyKernel(src, dst_x, kern_sobel_x);
     applyKernel(src, dst_y, kern_sobel_y);
     combine(dst_x, dst_y, dst_filter, &hypoteneuse);
     threshold(dst_filter, dst_filter, 150, 255, THRESH_BINARY);
 
-    // OpenCV Sobel
+    // OpenCV
     Mat tmp_x, tmp_y;
     filter2D(src, tmp_x, CV_16S, kern_sobel_x);     // x derivative
     filter2D(src, tmp_y, CV_16S, kern_sobel_y);     // y derivative
@@ -60,19 +63,38 @@ int main(int argc, char** argv )
     convertScaleAbs(src_filter, src_filter);        // back to CV_8U
     threshold(src_filter, src_filter, 150, 255, THRESH_BINARY);
 
-    // Isolate objects
-    Mat tmp, src_obj, dst_obj;
-    double hu[7];
+    // Compare
+    diff = sumOfAbsoluteDifferences(src_filter, dst_filter);
+    DLOG("filter abs diff %u\n", diff);
+
+    /*****      Isolate objects     *******/
+    Mat src_obj;    // grayscale and binarize output from edge detection
+    Mat dst_obj;    // for debug, draw bounding boxes around objects
+    Mat obj[10];    // put each object in its own Mat
 
     cvtColor(dst_filter, src_obj, CV_BGR2GRAY, 0);
     threshold(src_obj, src_obj, 50, 255, THRESH_BINARY);
-    Moments m = moments(src_obj, false);
-    HuMoments(m, hu);
-    tmp = src_obj.clone();
+    dst_obj = src_obj.clone();
 
+    for (int i = 0; i < 10; i++) {
+        struct rect r = extractObject(src_obj, dst_obj);
+        obj[i] = src(Range(r.top, r.bottom), Range(r.left, r.right));
+        DLOG("obj %d is %d x %d\n", i, obj[i].cols, obj[i].rows);
+    }
+
+    /*****      Image moments     *******/
+    // Ours
     _moment _m = imageMoments(src_obj);
     double *_hu = (double *)&_m.hu;
 
+    // OpenCV
+    double hu[7];
+    Moments m = moments(src_obj, false);
+    HuMoments(m, hu);
+
+
+
+    /*
     DLOG("Image moments\n");
     DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
     DLOG("%10s %12.0f %12.0f\n", "m00", m.m00, _m.m00);
@@ -102,29 +124,19 @@ int main(int argc, char** argv )
     DLOG("%10s %12.8f %12.8f\n", "hu[4]", hu[4], _hu[4]);
     DLOG("%10s %12.8f %12.8f\n", "hu[5]", hu[5], _hu[5]);
     DLOG("%10s %12.8f %12.8f\n", "hu[6]", hu[6], _hu[6]);
-
-    dst_obj = src_obj.clone();
-    struct rect r;
-    Mat o[10];
-    for (int i = 0; i < 4; i++) {
-        r = extractObject(src_obj, dst_obj);
-        o[i] = src(Range(r.top, r.bottom), Range(r.left, r.right));
-        DLOG("obj %d is %d x %d\n", i, o[i].cols, o[i].rows);
-    }
+    */
 
 
+    DLOG("Hu moments\n");
+    DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
     for (int i = 0; i < 7; i++) {
-        printf("%f ", hu[i]);
+        DLOG("%10s %12.8f %12.8f\n", "hu[i]", hu[i], _hu[i]);
     }
     printf("\n");
 
-    // Compare opencv filter to our own filter
-    diff = sumOfAbsoluteDifferences(src_filter, dst_filter);
-    DLOG("filter abs diff %u\n", diff);
-
     // Display results
-    displayImageRow("Extract obj", 4, &src, &o[0], &o[1], &o[2]);
-    //displayImageRow("Source", src, tmp);
+    displayImageRow("Extract obj", 4, &src, &obj[0], &obj[1], &obj[2]);
+    //displayImageRow("Source", src, src);
     //displayImageRow("Gray", src_gray, dst_gray);
     //displayImageRow("Filter", src, dst_filter);
 
