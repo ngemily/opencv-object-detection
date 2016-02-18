@@ -12,7 +12,7 @@ using namespace cv;
 static int x = 0;
 static int y = 0;
 
-void displayImagePair(const char *window_name, Mat &img1, Mat &img2);
+void displayImageRow(const char *window_name, int n, ...);
 static int hypoteneuse(int a, int b) { return sqrt(a * a + b * b); }
 static int average(int a, int b) { return (0.5 * a + 0.5 * b); }
 

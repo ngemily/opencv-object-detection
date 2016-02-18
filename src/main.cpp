@@ -105,12 +105,13 @@ int main(int argc, char** argv )
 
     dst_obj = src_obj.clone();
     struct rect r;
-    for (int i = 0; i < 1; i++) {
+    Mat o[10];
+    for (int i = 0; i < 4; i++) {
         r = extractObject(src_obj, dst_obj);
+        o[i] = src(Range(r.top, r.bottom), Range(r.left, r.right));
+        DLOG("obj %d is %d x %d\n", i, o[i].cols, o[i].rows);
     }
 
-    Mat obj = src(Range(r.top, r.bottom), Range(r.left, r.right));
-    DLOG("obj is %d x %d\n", obj.cols, obj.rows);
 
     for (int i = 0; i < 7; i++) {
         printf("%f ", hu[i]);
@@ -121,12 +122,11 @@ int main(int argc, char** argv )
     diff = sumOfAbsoluteDifferences(src_filter, dst_filter);
     DLOG("filter abs diff %u\n", diff);
 
-
     // Display results
-    displayImagePair("Extract obj", dst_obj, obj);
-    //displayImagePair("Source", src, tmp);
-    //displayImagePair("Gray", src_gray, dst_gray);
-    //displayImagePair("Filter", src, dst_filter);
+    displayImageRow("Extract obj", 4, &src, &o[0], &o[1], &o[2]);
+    //displayImageRow("Source", src, tmp);
+    //displayImageRow("Gray", src_gray, dst_gray);
+    //displayImageRow("Filter", src, dst_filter);
 
     return 0;
 }

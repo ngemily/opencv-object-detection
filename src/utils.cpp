@@ -6,47 +6,57 @@
  * @date Feb 15 2016
  */
 
+#include <stdarg.h>
+
+#include "debug.h"
 #include "utils.h"
 
 /**
- * Display pair of images side by side.
+ * Display row of images side by side.
  *
- * If only one image is to be displayed, pass the same image twice.  Calls to
- * this method move a global position forward, so that subsequent pairs of
- * images appear below the current one.  The image on the right will have a
- * suffix appended to the window name.
- 
- * Main purpose is two show result of two different implementations of the same
- * image processing algorithm, usually OpenCV library vs hand written.
- *
+ * Calls to this method move a global position forward, so that subsequent rows
+ * of images appear below the current one.
+
  * @param window_name   Name for image window.
- * @param img1          Image to be shown on the left.
- * @param img2          Image to be shown on the right.
+ * @param n             Number of images to show.
+ * @param ...           Pointers to Mat objects to be shown.
  */
-void displayImagePair(const char *window_name, Mat &img1, Mat &img2)
+void displayImageRow(const char *window_name, int n, ...)
 {
     if (!DISP) return;
 
-    const int X_INC = img1.cols + PADDING;
-    const int Y_INC = img1.rows + 3 * PADDING;
+    va_list args;
+    va_start(args, n);
 
     char buf[256];
-    strcpy(buf, "OpenCV ");
-    strcat(buf, window_name);
+    int X_INC = 0;
+    int Y_INC = 0;
 
-    namedWindow(buf, WINDOW_AUTOSIZE );
-    imshow(buf, img1);
-    moveWindow(buf, x, y);
-    x += X_INC;
+    for (int i = 0; i < n; i++) {
+        Mat *img = va_arg(args, Mat*);
 
-    if (img1.data != img2.data) {
-        namedWindow(window_name, WINDOW_AUTOSIZE );
-        imshow(window_name, img2);
-        moveWindow(window_name, x, y);
+        if (img->cols == 0 && img->rows == 0) {
+            DLOG("attempting to display empty image, skipping\n");
+            break;
+        }
+
+        X_INC = img->cols + PADDING;
+        Y_INC = img->rows + 3 * PADDING;
+
+        strcpy(buf, window_name);
+        sprintf(buf+strlen(buf), " %d", i);
+
+        namedWindow(buf, WINDOW_AUTOSIZE );
+        Mat I = *img;
+        imshow(buf, I);
+        moveWindow(buf, x, y);
+        x += X_INC;
     }
 
     x = 0;
     y += Y_INC;
+
+    va_end(args);
 
     waitKey(0);
 
