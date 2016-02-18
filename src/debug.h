@@ -3,7 +3,7 @@
 
 #define DEBUG 1
 #if DEBUG
-#define DLOG(fmt, ...) printf("INFO: " fmt, ##__VA_ARGS__)
+#define DLOG(fmt, ...) printf("INFO: <%s> " fmt, __FUNCTION__, ##__VA_ARGS__)
 #else
 #define DLOG(fmt, ...)
 #endif
