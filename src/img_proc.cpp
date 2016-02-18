@@ -205,6 +205,7 @@ struct rect extractObject(Mat &src, Mat &dst)
     assert(src.isContinuous());
     assert(dst.isContinuous());
 
+    DLOG("%s\n", __FUNCTION__);
     DLOG("src    %d x %d\n", src.size().width, src.size().height);
 
     int start_x, start_y;
@@ -224,13 +225,13 @@ struct rect extractObject(Mat &src, Mat &dst)
                 goto find_bottom_right;
             }
 
-            if (i == rows && j == cols) {
-                DLOG("empty image\n");
-                return r;
-            }
             idx++;
         }
     }
+
+    // Did not find any white pixels.
+    DLOG("empty image\n");
+    return r;
 
     // Inch forwards diagonally until no more pixels
 find_bottom_right:
