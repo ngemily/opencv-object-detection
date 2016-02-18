@@ -91,9 +91,7 @@ int main(int argc, char** argv )
     displayImagePair("BB", src_obj, dst_obj);
     //displayImagePair("Source", src, tmp);
     //displayImagePair("Gray", src_gray, dst_gray);
-    displayImagePair("Filter", src, dst_filter);
-
-    waitKey(0);
+    //displayImagePair("Filter", src, dst_filter);
 
     return 0;
 }

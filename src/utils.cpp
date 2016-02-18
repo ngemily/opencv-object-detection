@@ -48,5 +48,7 @@ void displayImagePair(const char *window_name, Mat &img1, Mat &img2)
     x = 0;
     y += Y_INC;
 
+    waitKey(0);
+
     return;
 }
