@@ -74,25 +74,53 @@ int main(int argc, char** argv )
 
     cvtColor(dst_filter, src_obj, CV_BGR2GRAY, 0);
     threshold(src_obj, src_obj, 50, 255, THRESH_BINARY);
+
     dst_obj = src_obj.clone();
+    Mat tmp = src_obj.clone();
 
     for (int i = 0; i < 10; i++) {
         struct rect r = extractObject(src_obj, dst_obj);
-        obj[i] = src(Range(r.top, r.bottom), Range(r.left, r.right));
-        DLOG("obj %d is %d x %d\n", i, obj[i].cols, obj[i].rows);
+        obj[i] = tmp(Range(r.top, r.bottom), Range(r.left, r.right));
+        //DLOG("obj %d is %d x %d\n", i, obj[i].cols, obj[i].rows);
     }
 
     /*****      Image moments     *******/
-    // Ours
-    _moment _m = imageMoments(src_obj);
-    double *_hu = (double *)&_m.hu;
+    for (int i = 0; i < 1; i++) {
+        // Ours
+        _moment _m = imageMoments(obj[i]);
+        double *_hu = (double *)&_m.hu;
 
-    // OpenCV
-    double hu[7];
-    Moments m = moments(src_obj, false);
-    HuMoments(m, hu);
+        // OpenCV
+        double hu[7];
+        Moments m = moments(obj[i], false);
+        HuMoments(m, hu);
 
+        DLOG("Image moments\n");
+        DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
+        DLOG("%10s %12.0f %12.0f\n", "m00", m.m00, _m.m00);
+        DLOG("%10s %12.3f %12.3f\n", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
+        DLOG("%10s %12.3f %12.3f\n", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
+        DLOG("\n");
 
+        /*
+        DLOG("normalized central moments\n");
+        DLOG("%10s %12.8f %12.8f\n", "n02", m.nu02, _m.n02);
+        DLOG("%10s %12.8f %12.8f\n", "n03", m.nu03, _m.n03);
+        DLOG("%10s %12.8f %12.8f\n", "n11", m.nu11, _m.n11);
+        DLOG("%10s %12.8f %12.8f\n", "n12", m.nu12, _m.n12);
+        DLOG("%10s %12.8f %12.8f\n", "n21", m.nu21, _m.n21);
+        DLOG("%10s %12.8f %12.8f\n", "n20", m.nu20, _m.n20);
+        DLOG("%10s %12.8f %12.8f\n", "n30", m.nu30, _m.n30);
+        DLOG("\n");
+
+        DLOG("Hu moments\n");
+        DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
+        for (int i = 0; i < 7; i++) {
+            DLOG("hu[%d] %12.11f %12.11f\n", i, hu[i], _hu[i]);
+        }
+        DLOG("\n");
+        */
+    }
 
     /*
     DLOG("Image moments\n");
@@ -127,12 +155,6 @@ int main(int argc, char** argv )
     */
 
 
-    DLOG("Hu moments\n");
-    DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
-    for (int i = 0; i < 7; i++) {
-        DLOG("%10s %12.8f %12.8f\n", "hu[i]", hu[i], _hu[i]);
-    }
-    printf("\n");
 
     // Display results
     displayImageRow("Extract obj", 4, &src, &obj[0], &obj[1], &obj[2]);
