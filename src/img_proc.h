@@ -76,6 +76,6 @@ void applyKernel(Mat &src, Mat &dst, const Mat &kernel);
 void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b));
 struct rect extractObject(Mat &src, Mat &dst);
 struct _moment imageMoments(Mat &src);
-void isolateColor(const Mat &src, const int c, Mat &dst);
+void isolateColor(const Mat &src, const int c, Mat &dst, uchar thresh);
 
 #endif

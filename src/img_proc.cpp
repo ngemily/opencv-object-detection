@@ -422,13 +422,18 @@ struct _moment imageMoments(Mat &src)
  * Isolate a single color from image.
  *
  * Simply extracting a single color isn't very helpful, is there is a strong
- * intensity of each color in white.
+ * intensity of each color in white.  Subtract the common value between each
+ * channel, and apply a threshold for desired channel over the other channels.
+ *
+ * NB: What if a pixel has the value (240, 0, 255)?  This method doesn't take
+ * into account all three channels very well.
  *
  * @param src       3 channel (color) image
  * @param channel   Color to be isolated
  * @param dst       Copy of @src with only desired color.
+ * @param thresh    Threshold for determining that a pixel is a certain color.
  */
-void isolateColor(const Mat &src, const int c, Mat &dst)
+void isolateColor(const Mat &src, const int c, Mat &dst, uchar thresh)
 {
     assert(src.isContinuous());
     assert(src.channels() == COLOR);
@@ -455,7 +460,11 @@ void isolateColor(const Mat &src, const int c, Mat &dst)
                         (b <= r && b <= g) ? b :
                         0;
 
-            dst.data[idx + c] = src.data[idx + c] - min;
+            uchar p = src.data[idx + c] - min;
+
+            if (p > thresh) {
+                dst.data[idx + c] = p;
+            }
         }
     }
 }
