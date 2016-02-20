@@ -16,6 +16,42 @@
 #include "kernel.h"
 #include "utils.h"
 
+/**
+ * Trackbar callback.  Invoked when value of trackbar is changed.
+ *
+ * Use the trackbar value to specify threshold to `isolateColor` (i.e. how red
+ * does this pixel have to be to count as a RED pixel.
+ *
+ * @param x     Value of trackbar
+ * @param data  Void pointer to source image.
+ */
+void locate_point_cb(int x, void *data)
+{
+    Mat red, bw, src;
+
+    src = *(Mat *)data;
+
+    isolateColor(src, RED, red, x);
+    cvtColor(red, bw, CV_BGR2GRAY, 0);
+    _moment color_moment = imageMoments(bw);
+
+    // Avoid a divide-by-zero in the case that there are no red pixels.
+    if (color_moment.m00 == 0) {
+        WLOG("Unable to find centroid.");
+        return;
+    }
+
+    int xbar = (int)color_moment.m10 / color_moment.m00;
+    int ybar = (int)color_moment.m01 / color_moment.m00;
+
+    // Draw a small blue circle at the centroid to visually identify it.
+    circle(red, Point(xbar, ybar), 3, Scalar(255, 0, 0), -1);
+
+    DLOG("Threshold %d\t Centroid (%d, %d)", x, xbar, ybar);
+
+    imshow("Extract red 0", red);
+}
+
 using namespace cv;
 
 int main(int argc, char** argv )
@@ -85,27 +121,15 @@ int main(int argc, char** argv )
     }
 
     /*****      Isolate color     *******/
-    Mat red, bw, thresh;
+    int x;
 
-    isolateColor(src, RED, red);
-    cvtColor(red, bw, CV_BGR2GRAY, 0);
-    //threshold(bw, thresh, 100, 255, THRESH_BINARY);
-    //_moment color_moment = imageMoments(thresh);
-    DLOG("");
-    Moments color_moment = moments(bw, false);
-    DLOG("");
+    displayImageRow("Extract red", 1, &src);
+    createTrackbar("Trackbar", "Extract red 0", &x, 255, locate_point_cb,
+            (void *)&src);
 
-    int xbar = (int)color_moment.m10 / color_moment.m00;
-    int ybar = (int)color_moment.m01 / color_moment.m00;
+    waitKey(0);
 
-    red.data[ybar * 3 * red.cols + xbar * 3 + BLUE] = 255;
-
-    DLOG("%10s %12d", "xbar", xbar);
-    DLOG("%10s %12d", "ybar", ybar);
-
-    displayImageRow("Extract red", 2, &bw, &red);
-
-    return 0;;
+    return 0;
     /*****      Image moments     *******/
     for (int i = 0; i < 1; i++) {
         // Ours
