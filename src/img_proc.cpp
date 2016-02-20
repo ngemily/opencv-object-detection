@@ -365,6 +365,10 @@ struct _moment imageMoments(Mat &src)
         }
     }
 
+    if (m.m00 == 0) {
+        WLOG("m.m00 == 0");
+    }
+
     const float x_bar = m.m10 / m.m00;
     const float y_bar = m.m01 / m.m00;
 
