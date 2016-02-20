@@ -200,7 +200,7 @@ struct rect extractObject(Mat &src, Mat &dst)
     const int rows = src.rows;
     const int cols = src.cols;
 
-    assert(src.channels() == 1);
+    assert(src.channels() == GRAY);
 
     assert(src.isContinuous());
     assert(dst.isContinuous());
@@ -336,7 +336,7 @@ struct _moment imageMoments(Mat &src)
     DLOG("src    %d x %d\n", src.size().width, src.size().height);
 
     assert(src.isContinuous());
-    assert(src.channels() == 1);
+    assert(src.channels() == GRAY);
 
     const int rows = src.rows;
     const int cols = src.cols;
@@ -427,7 +427,7 @@ struct _moment imageMoments(Mat &src)
 void isolateColor(const Mat &src, const int c, Mat &dst)
 {
     assert(src.isContinuous());
-    assert(src.channels() == 3);
+    assert(src.channels() == COLOR);
 
     dst = Mat::zeros(src.size(), src.type());
 

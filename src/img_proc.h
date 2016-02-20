@@ -1,3 +1,11 @@
+/**
+ * Image processing functions written to implement OpenCV functionality in C.
+ *
+ * @file img_proc.h
+ * @author Emily Ng
+ * @date Feb 11 2016
+ */
+
 #ifndef __IMG_PROC_H
 #define __IMG_PROC_H
 
@@ -12,6 +20,11 @@
 #define G_WEIGHT (0.5870)
 #define B_WEIGHT (0.1140)
 
+// number of channels in grayscale or color image
+#define COLOR 3
+#define GRAY 1
+
+// channel offset for BGR image
 #define BLUE (0)
 #define GREEN (1)
 #define RED (2)

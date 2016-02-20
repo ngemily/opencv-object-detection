@@ -84,6 +84,28 @@ int main(int argc, char** argv )
         //DLOG("obj %d is %d x %d\n", i, obj[i].cols, obj[i].rows);
     }
 
+    /*****      Isolate color     *******/
+    Mat red, bw, thresh;
+
+    isolateColor(src, RED, red);
+    cvtColor(red, bw, CV_BGR2GRAY, 0);
+    //threshold(bw, thresh, 100, 255, THRESH_BINARY);
+    //_moment color_moment = imageMoments(thresh);
+    DLOG("\n");
+    Moments color_moment = moments(bw, false);
+    DLOG("\n");
+
+    int xbar = (int)color_moment.m10 / color_moment.m00;
+    int ybar = (int)color_moment.m01 / color_moment.m00;
+
+    red.data[ybar * 3 * red.cols + xbar * 3 + BLUE] = 255;
+
+    DLOG("%10s %12d\n", "xbar", xbar);
+    DLOG("%10s %12d\n", "ybar", ybar);
+
+    displayImageRow("Extract red", 2, &bw, &red);
+
+    return 0;;
     /*****      Image moments     *******/
     for (int i = 0; i < 1; i++) {
         // Ours
