@@ -335,6 +335,9 @@ struct _moment imageMoments(Mat &src)
 {
     DLOG("src    %d x %d\n", src.size().width, src.size().height);
 
+    assert(src.isContinuous());
+    assert(src.channels() == 1);
+
     const int rows = src.rows;
     const int cols = src.cols;
 
