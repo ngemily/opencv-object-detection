@@ -413,3 +413,45 @@ struct _moment imageMoments(Mat &src)
 
     return m;
 }
+
+/**
+ * Isolate a single color from image.
+ *
+ * Simply extracting a single color isn't very helpful, is there is a strong
+ * intensity of each color in white.
+ *
+ * @param src       3 channel (color) image
+ * @param channel   Color to be isolated
+ * @param dst       Copy of @src with only desired color.
+ */
+void isolateColor(const Mat &src, const int c, Mat &dst)
+{
+    assert(src.isContinuous());
+    assert(src.channels() == 3);
+
+    dst = Mat::zeros(src.size(), src.type());
+
+    const int rows = src.rows;
+    const int cols = src.cols;
+    const int num_channels = src.channels();
+
+    DLOG("isolating channel %d\n", c);
+
+    int i, j, idx=0;
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols * num_channels; j+=num_channels) {
+            idx+=num_channels;
+
+            uchar r = src.data[idx + RED];
+            uchar g = src.data[idx + GREEN];
+            uchar b = src.data[idx + BLUE];
+
+            uchar min = (r <= g && r <= b) ? r :
+                        (g <= r && g <= b) ? g :
+                        (b <= r && b <= g) ? b :
+                        0;
+
+            dst.data[idx + c] = src.data[idx + c] - min;
+        }
+    }
+}

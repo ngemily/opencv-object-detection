@@ -12,6 +12,10 @@
 #define G_WEIGHT (0.5870)
 #define B_WEIGHT (0.1140)
 
+#define BLUE (0)
+#define GREEN (1)
+#define RED (2)
+
 // saturate values for 8-bit grayscale image
 #define WHITE (255)
 #define BLACK (0)
@@ -59,5 +63,6 @@ void applyKernel(Mat &src, Mat &dst, const Mat &kernel);
 void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b));
 struct rect extractObject(Mat &src, Mat &dst);
 struct _moment imageMoments(Mat &src);
+void isolateColor(const Mat &src, const int c, Mat &dst);
 
 #endif
