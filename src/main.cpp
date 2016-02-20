@@ -24,14 +24,14 @@ int main(int argc, char** argv )
 
     // Check args
     if (argc != 2) {
-        printf("usage: DisplayImage.out <Image_Path>\n");
+        DLOG("usage: DisplayImage.out <Image_Path>");
         return -1;
     }
 
     // Load image
     src = imread(argv[1], CV_LOAD_IMAGE_COLOR);
     if (!src.data) {
-        printf("No image data \n");
+        ELOG("No image data.");
         return -1;
     }
 
@@ -43,7 +43,7 @@ int main(int argc, char** argv )
 
     // Compare
     unsigned int diff = sumOfAbsoluteDifferences(src_gray, dst_gray);
-    DLOG("gray abs diff %u\n", diff);
+    DLOG("gray abs diff %u", diff);
 
     /*****      Sobel edge detection     *******/
     Mat src_filter, dst_filter;
@@ -65,7 +65,7 @@ int main(int argc, char** argv )
 
     // Compare
     diff = sumOfAbsoluteDifferences(src_filter, dst_filter);
-    DLOG("filter abs diff %u\n", diff);
+    DLOG("filter abs diff %u", diff);
 
     /*****      Isolate objects     *******/
     Mat src_obj;    // grayscale and binarize output from edge detection
@@ -81,7 +81,7 @@ int main(int argc, char** argv )
     for (int i = 0; i < 10; i++) {
         struct rect r = extractObject(src_obj, dst_obj);
         obj[i] = tmp(Range(r.top, r.bottom), Range(r.left, r.right));
-        //DLOG("obj %d is %d x %d\n", i, obj[i].cols, obj[i].rows);
+        //DLOG("obj %d is %d x %d", i, obj[i].cols, obj[i].rows);
     }
 
     /*****      Isolate color     *******/
@@ -91,17 +91,17 @@ int main(int argc, char** argv )
     cvtColor(red, bw, CV_BGR2GRAY, 0);
     //threshold(bw, thresh, 100, 255, THRESH_BINARY);
     //_moment color_moment = imageMoments(thresh);
-    DLOG("\n");
+    DLOG("");
     Moments color_moment = moments(bw, false);
-    DLOG("\n");
+    DLOG("");
 
     int xbar = (int)color_moment.m10 / color_moment.m00;
     int ybar = (int)color_moment.m01 / color_moment.m00;
 
     red.data[ybar * 3 * red.cols + xbar * 3 + BLUE] = 255;
 
-    DLOG("%10s %12d\n", "xbar", xbar);
-    DLOG("%10s %12d\n", "ybar", ybar);
+    DLOG("%10s %12d", "xbar", xbar);
+    DLOG("%10s %12d", "ybar", ybar);
 
     displayImageRow("Extract red", 2, &bw, &red);
 
@@ -117,63 +117,63 @@ int main(int argc, char** argv )
         Moments m = moments(obj[i], false);
         HuMoments(m, hu);
 
-        DLOG("Image moments\n");
-        DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
-        DLOG("%10s %12.0f %12.0f\n", "m00", m.m00, _m.m00);
-        DLOG("%10s %12.3f %12.3f\n", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
-        DLOG("%10s %12.3f %12.3f\n", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
-        DLOG("\n");
+        DLOG("Image moments");
+        DLOG("%10s %12s %12s", "", "OpenCV", "custom");
+        DLOG("%10s %12.0f %12.0f", "m00", m.m00, _m.m00);
+        DLOG("%10s %12.3f %12.3f", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
+        DLOG("%10s %12.3f %12.3f", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
+        DLOG("");
 
         /*
-        DLOG("normalized central moments\n");
-        DLOG("%10s %12.8f %12.8f\n", "n02", m.nu02, _m.n02);
-        DLOG("%10s %12.8f %12.8f\n", "n03", m.nu03, _m.n03);
-        DLOG("%10s %12.8f %12.8f\n", "n11", m.nu11, _m.n11);
-        DLOG("%10s %12.8f %12.8f\n", "n12", m.nu12, _m.n12);
-        DLOG("%10s %12.8f %12.8f\n", "n21", m.nu21, _m.n21);
-        DLOG("%10s %12.8f %12.8f\n", "n20", m.nu20, _m.n20);
-        DLOG("%10s %12.8f %12.8f\n", "n30", m.nu30, _m.n30);
-        DLOG("\n");
+        DLOG("normalized central moments");
+        DLOG("%10s %12.8f %12.8f", "n02", m.nu02, _m.n02);
+        DLOG("%10s %12.8f %12.8f", "n03", m.nu03, _m.n03);
+        DLOG("%10s %12.8f %12.8f", "n11", m.nu11, _m.n11);
+        DLOG("%10s %12.8f %12.8f", "n12", m.nu12, _m.n12);
+        DLOG("%10s %12.8f %12.8f", "n21", m.nu21, _m.n21);
+        DLOG("%10s %12.8f %12.8f", "n20", m.nu20, _m.n20);
+        DLOG("%10s %12.8f %12.8f", "n30", m.nu30, _m.n30);
+        DLOG("");
 
-        DLOG("Hu moments\n");
-        DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
+        DLOG("Hu moments");
+        DLOG("%10s %12s %12s", "", "OpenCV", "custom");
         for (int i = 0; i < 7; i++) {
-            DLOG("hu[%d] %12.11f %12.11f\n", i, hu[i], _hu[i]);
+            DLOG("hu[%d] %12.11f %12.11f", i, hu[i], _hu[i]);
         }
-        DLOG("\n");
+        DLOG("");
         */
     }
 
     /*
-    DLOG("Image moments\n");
-    DLOG("%10s %12s %12s\n", "", "OpenCV", "custom");
-    DLOG("%10s %12.0f %12.0f\n", "m00", m.m00, _m.m00);
-    DLOG("%10s %12.3f %12.3f\n", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
-    DLOG("%10s %12.3f %12.3f\n", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
-    DLOG("\n");
-    DLOG("%10s %12e %12e\n", "u02", m.mu02, _m.u02);
-    DLOG("%10s %12e %12e\n", "u03", m.mu03, _m.u03);
-    DLOG("%10s %12e %12e\n", "u11", m.mu11, _m.u11);
-    DLOG("%10s %12e %12e\n", "u12", m.mu12, _m.u12);
-    DLOG("%10s %12e %12e\n", "u21", m.mu21, _m.u21);
-    DLOG("%10s %12e %12e\n", "u20", m.mu20, _m.u20);
-    DLOG("%10s %12e %12e\n", "u30", m.mu30, _m.u30);
-    DLOG("\n");
-    DLOG("%10s %12.8f %12.8f\n", "u02", m.nu02, _m.n02);
-    DLOG("%10s %12.8f %12.8f\n", "u03", m.nu03, _m.n03);
-    DLOG("%10s %12.8f %12.8f\n", "u11", m.nu11, _m.n11);
-    DLOG("%10s %12.8f %12.8f\n", "u12", m.nu12, _m.n12);
-    DLOG("%10s %12.8f %12.8f\n", "u21", m.nu21, _m.n21);
-    DLOG("%10s %12.8f %12.8f\n", "u20", m.nu20, _m.n20);
-    DLOG("%10s %12.8f %12.8f\n", "u30", m.nu30, _m.n30);
-    DLOG("\n");
-    DLOG("%10s %12.8f %12.8f\n", "hu[0]", hu[0], _hu[0]);
-    DLOG("%10s %12.8f %12.8f\n", "hu[1]", hu[1], _hu[1]);
-    DLOG("%10s %12.8f %12.8f\n", "hu[2]", hu[2], _hu[2]);
-    DLOG("%10s %12.8f %12.8f\n", "hu[3]", hu[3], _hu[3]);
-    DLOG("%10s %12.8f %12.8f\n", "hu[4]", hu[4], _hu[4]);
-    DLOG("%10s %12.8f %12.8f\n", "hu[5]", hu[5], _hu[5]);
-    DLOG("%10s %12.8f %12.8f\n", "hu[6]", hu[6], _hu[6]);
+    DLOG("Image moments");
+    DLOG("%10s %12s %12s", "", "OpenCV", "custom");
+    DLOG("%10s %12.0f %12.0f", "m00", m.m00, _m.m00);
+    DLOG("%10s %12.3f %12.3f", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
+    DLOG("%10s %12.3f %12.3f", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
+    DLOG("");
+    DLOG("%10s %12e %12e", "u02", m.mu02, _m.u02);
+    DLOG("%10s %12e %12e", "u03", m.mu03, _m.u03);
+    DLOG("%10s %12e %12e", "u11", m.mu11, _m.u11);
+    DLOG("%10s %12e %12e", "u12", m.mu12, _m.u12);
+    DLOG("%10s %12e %12e", "u21", m.mu21, _m.u21);
+    DLOG("%10s %12e %12e", "u20", m.mu20, _m.u20);
+    DLOG("%10s %12e %12e", "u30", m.mu30, _m.u30);
+    DLOG("");
+    DLOG("%10s %12.8f %12.8f", "u02", m.nu02, _m.n02);
+    DLOG("%10s %12.8f %12.8f", "u03", m.nu03, _m.n03);
+    DLOG("%10s %12.8f %12.8f", "u11", m.nu11, _m.n11);
+    DLOG("%10s %12.8f %12.8f", "u12", m.nu12, _m.n12);
+    DLOG("%10s %12.8f %12.8f", "u21", m.nu21, _m.n21);
+    DLOG("%10s %12.8f %12.8f", "u20", m.nu20, _m.n20);
+    DLOG("%10s %12.8f %12.8f", "u30", m.nu30, _m.n30);
+    DLOG("");
+    DLOG("%10s %12.8f %12.8f", "hu[0]", hu[0], _hu[0]);
+    DLOG("%10s %12.8f %12.8f", "hu[1]", hu[1], _hu[1]);
+    DLOG("%10s %12.8f %12.8f", "hu[2]", hu[2], _hu[2]);
+    DLOG("%10s %12.8f %12.8f", "hu[3]", hu[3], _hu[3]);
+    DLOG("%10s %12.8f %12.8f", "hu[4]", hu[4], _hu[4]);
+    DLOG("%10s %12.8f %12.8f", "hu[5]", hu[5], _hu[5]);
+    DLOG("%10s %12.8f %12.8f", "hu[6]", hu[6], _hu[6]);
     */
 
 

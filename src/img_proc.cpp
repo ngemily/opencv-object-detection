@@ -43,7 +43,7 @@ unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B)
         }
     }
 
-    DLOG("absdiff %f\n", sum / (float) (rows * cols * num_channels));
+    DLOG("absdiff %f", sum / (float) (rows * cols * num_channels));
     return sum;
 }
 
@@ -90,9 +90,9 @@ void rgb2g(Mat &src, Mat &dst)
  */
 void applyKernel(Mat &src, Mat &dst, const Mat &kernel)
 {
-    DLOG("kernel %d x %d\n", kernel.size().width, kernel.size().height);
-    DLOG("src    %d x %d\n", src.size().width, src.size().height);
-    DLOG("dst    %d x %d\n", dst.size().width, dst.size().height);
+    DLOG("kernel %d x %d", kernel.size().width, kernel.size().height);
+    DLOG("src    %d x %d", src.size().width, src.size().height);
+    DLOG("dst    %d x %d", dst.size().width, dst.size().height);
 
     const int rows = src.size().height;
     const int cols = src.size().width;
@@ -107,7 +107,7 @@ void applyKernel(Mat &src, Mat &dst, const Mat &kernel)
 
     int i, j;
 
-    DLOG("Kernel:\n");
+    DLOG("Kernel:");
     const char *k = (char *)kernel.data;
     for (i = 0; i < kernel.rows * kernel.cols; i++) {
         printf("%4d ", k[i]);
@@ -205,8 +205,8 @@ struct rect extractObject(Mat &src, Mat &dst)
     assert(src.isContinuous());
     assert(dst.isContinuous());
 
-    DLOG("%s\n", __FUNCTION__);
-    DLOG("src    %d x %d\n", src.size().width, src.size().height);
+    DLOG("%s", __FUNCTION__);
+    DLOG("src    %d x %d", src.size().width, src.size().height);
 
     int start_x, start_y;
     int top, left, bottom, right;
@@ -221,7 +221,7 @@ struct rect extractObject(Mat &src, Mat &dst)
                 dst.data[idx] = WHITE;
                 start_x = j;
                 start_y = i;
-                DLOG("start pixel (%d, %d)\n", i, j);
+                DLOG("start pixel (%d, %d)", i, j);
                 goto find_bottom_right;
             }
 
@@ -230,7 +230,7 @@ struct rect extractObject(Mat &src, Mat &dst)
     }
 
     // Did not find any white pixels.
-    DLOG("empty image\n");
+    DLOG("empty image");
     return r;
 
     // Inch forwards diagonally until no more pixels
@@ -262,7 +262,7 @@ find_bottom_right:
 
         if (!found_pixel || i == rows || j == cols) {
             dst.data[i * cols + j] = WHITE;
-            DLOG("bottom right (%d, %d)\n", i, j);
+            DLOG("bottom right (%d, %d)", i, j);
             bottom = i;
             right = j;
             goto find_top_left;
@@ -299,11 +299,11 @@ find_top_left:
         }
 
         if (i == 0 || j == 0) {
-            DLOG("out of image\n");
+            DLOG("out of image");
         }
         if (!found_pixel || i == 0 || j == 0) {
             dst.data[i * cols + j] = WHITE;
-            DLOG("top left (%d, %d)\n", i, j);
+            DLOG("top left (%d, %d)", i, j);
             top = i;
             left = j;
             goto end;
@@ -326,14 +326,14 @@ end:
     r.left = left;
     r.right = right;
 
-    DLOG("obj is %d x %d\n", r.right - r.left, r.bottom - r.top);
+    DLOG("obj is %d x %d", r.right - r.left, r.bottom - r.top);
 
     return r;
 }
 
 struct _moment imageMoments(Mat &src)
 {
-    DLOG("src    %d x %d\n", src.size().width, src.size().height);
+    DLOG("src    %d x %d", src.size().width, src.size().height);
 
     assert(src.isContinuous());
     assert(src.channels() == GRAY);
@@ -439,7 +439,7 @@ void isolateColor(const Mat &src, const int c, Mat &dst)
     const int cols = src.cols;
     const int num_channels = src.channels();
 
-    DLOG("isolating channel %d\n", c);
+    DLOG("isolating channel %d", c);
 
     int i, j, idx=0;
     for (i = 0; i < rows; i++) {
