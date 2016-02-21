@@ -80,6 +80,7 @@ int main(int argc, char** argv )
     // Compare
     unsigned int diff = sumOfAbsoluteDifferences(src_gray, dst_gray);
     DLOG("gray abs diff %u", diff);
+    //displayImageRow("Color to gray", 2, &src_gray, &dst_gray);
 
     /*****      Sobel edge detection     *******/
     Mat src_filter, dst_filter;
@@ -102,6 +103,7 @@ int main(int argc, char** argv )
     // Compare
     diff = sumOfAbsoluteDifferences(src_filter, dst_filter);
     DLOG("filter abs diff %u", diff);
+    //displayImageRow("Sobel", 2, &src_filter, &dst_filter);
 
     /*****      Isolate objects     *******/
     Mat src_obj;    // grayscale and binarize output from edge detection
@@ -113,9 +115,10 @@ int main(int argc, char** argv )
 
     dst_obj = src_obj.clone();
     Mat tmp = src_obj.clone();
+
+    int num_objs = 0;
     int i = 0;
     struct rect r;
-
     do {
         r = extractObject(src_obj, dst_obj);
         obj[i] = tmp(Range(r.top, r.bottom), Range(r.left, r.right));
@@ -123,8 +126,9 @@ int main(int argc, char** argv )
     } while(r.top != r.bottom && r.left != r.bottom);
 
     DLOG("Found %d objects.", i);
+    num_objs = i;
 
-    //displayImageRow("Extract objects", 2, &src_obj, &dst_obj);
+    displayImageRow("obj", 5, &obj[0], &obj[1], &obj[2], &obj[3], &obj[4]);
 
     /*****      Isolate color     *******/
     /*
@@ -135,22 +139,27 @@ int main(int argc, char** argv )
             (void *)&src);
 
     waitKey(0);
-
-    return 0;
     */
 
     /*****      Image moments     *******/
-    for (int i = 0; i < 4; i++) {
+    double *hu_g = (double *)malloc(sizeof(double) * 7 * num_objs);
+    for (int i = 0; i < num_objs; i++) {
         // Ours
         _moment _m = imageMoments(obj[i]);
-        double *_hu = (double *)&_m.hu;
+
+        if (_m.m00 == 0) break;
 
         // OpenCV
         double hu[7];
         Moments m = moments(obj[i], false);
         HuMoments(m, hu);
 
+        for (int j = 0; j < 7; j++) {
+            hu_g[i * 7 + j] = hu[j];
+        }
+
         /*
+        double *_hu = (double *)&_m.hu;
         DLOG("Image moments");
         DLOG("%10s %12s %12s", "", "OpenCV", "custom");
         DLOG("%10s %12.0f %12.0f", "m00", m.m00, _m.m00);
@@ -179,7 +188,6 @@ int main(int argc, char** argv )
         DLOG("%10s %12.8f %12.8f", "n20", m.nu20, _m.n20);
         DLOG("%10s %12.8f %12.8f", "n30", m.nu30, _m.n30);
         DLOG("");
-        */
 
         DLOG("Hu moments");
         DLOG("%10s %12s %12s", "", "OpenCV", "custom");
@@ -187,15 +195,23 @@ int main(int argc, char** argv )
             DLOG("hu[%d] %+33.32f %+33.32f", i, hu[i], _hu[i]);
         }
         DLOG("");
+        */
 
+        unsigned int r = compareHu(&hu_g[0], &hu_g[7 * i]);
+
+        // For debug, write the calculated difference onto the source image.
+        // Locate obj within src image.
+        Point ofs;
+        Size parent_size;
+        obj[i].locateROI(parent_size, ofs);
+
+        // Write the number to the image, at the object.
+        char buf[256];
+        sprintf(buf, "%d", r);
+        putText(src, buf, ofs, FONT_HERSHEY_PLAIN, 1, Scalar::all(255), 1);
     }
 
-
-    // Display results
-    displayImageRow("Extract obj", 4, &src, &obj[0], &obj[1], &obj[2]);
-    //displayImageRow("Source", src, src);
-    //displayImageRow("Gray", src_gray, dst_gray);
-    //displayImageRow("Filter", src, dst_filter);
+    displayImageRow("Hu moments", 1, &src);
 
     return 0;
 }
