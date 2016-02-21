@@ -338,8 +338,6 @@ end:
  */
 struct _moment imageMoments(const Mat &src)
 {
-    DLOG("src    %d x %d", src.size().width, src.size().height);
-
     assert(src.channels() == GRAY);
 
     const int rows = src.rows;
