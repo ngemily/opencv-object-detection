@@ -36,12 +36,13 @@ void displayImageRow(const char *window_name, int n, ...)
         Mat *img = va_arg(args, Mat*);
 
         if (img->cols == 0 && img->rows == 0) {
-            DLOG("attempting to display empty image, skipping\n");
+            WLOG("Attempting to display empty image, skipping.");
             break;
         }
 
+        int y_inc = img->rows + 3 * PADDING;
         X_INC = img->cols + PADDING;
-        Y_INC = img->rows + 3 * PADDING;
+        Y_INC = (y_inc > Y_INC) ? y_inc : Y_INC;
 
         strcpy(buf, window_name);
         sprintf(buf+strlen(buf), " %d", i);
