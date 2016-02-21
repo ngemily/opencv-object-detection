@@ -127,6 +127,7 @@ int main(int argc, char** argv )
     //displayImageRow("Extract objects", 2, &src_obj, &dst_obj);
 
     /*****      Isolate color     *******/
+    /*
     int x;
 
     displayImageRow("Extract red", 1, &src);
@@ -136,8 +137,10 @@ int main(int argc, char** argv )
     waitKey(0);
 
     return 0;
+    */
+
     /*****      Image moments     *******/
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 4; i++) {
         // Ours
         _moment _m = imageMoments(obj[i]);
         double *_hu = (double *)&_m.hu;
@@ -147,12 +150,24 @@ int main(int argc, char** argv )
         Moments m = moments(obj[i], false);
         HuMoments(m, hu);
 
+        /*
         DLOG("Image moments");
         DLOG("%10s %12s %12s", "", "OpenCV", "custom");
         DLOG("%10s %12.0f %12.0f", "m00", m.m00, _m.m00);
         DLOG("%10s %12.3f %12.3f", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
         DLOG("%10s %12.3f %12.3f", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
         DLOG("");
+
+        DLOG("central moments");
+        DLOG("%10s %12e %12e", "u02", m.mu02, _m.u02);
+        DLOG("%10s %12e %12e", "u03", m.mu03, _m.u03);
+        DLOG("%10s %12e %12e", "u11", m.mu11, _m.u11);
+        DLOG("%10s %12e %12e", "u12", m.mu12, _m.u12);
+        DLOG("%10s %12e %12e", "u21", m.mu21, _m.u21);
+        DLOG("%10s %12e %12e", "u20", m.mu20, _m.u20);
+        DLOG("%10s %12e %12e", "u30", m.mu30, _m.u30);
+        DLOG("");
+        */
 
         /*
         DLOG("normalized central moments");
@@ -164,48 +179,16 @@ int main(int argc, char** argv )
         DLOG("%10s %12.8f %12.8f", "n20", m.nu20, _m.n20);
         DLOG("%10s %12.8f %12.8f", "n30", m.nu30, _m.n30);
         DLOG("");
+        */
 
         DLOG("Hu moments");
         DLOG("%10s %12s %12s", "", "OpenCV", "custom");
         for (int i = 0; i < 7; i++) {
-            DLOG("hu[%d] %12.11f %12.11f", i, hu[i], _hu[i]);
+            DLOG("hu[%d] %+33.32f %+33.32f", i, hu[i], _hu[i]);
         }
         DLOG("");
-        */
+
     }
-
-    /*
-    DLOG("Image moments");
-    DLOG("%10s %12s %12s", "", "OpenCV", "custom");
-    DLOG("%10s %12.0f %12.0f", "m00", m.m00, _m.m00);
-    DLOG("%10s %12.3f %12.3f", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
-    DLOG("%10s %12.3f %12.3f", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
-    DLOG("");
-    DLOG("%10s %12e %12e", "u02", m.mu02, _m.u02);
-    DLOG("%10s %12e %12e", "u03", m.mu03, _m.u03);
-    DLOG("%10s %12e %12e", "u11", m.mu11, _m.u11);
-    DLOG("%10s %12e %12e", "u12", m.mu12, _m.u12);
-    DLOG("%10s %12e %12e", "u21", m.mu21, _m.u21);
-    DLOG("%10s %12e %12e", "u20", m.mu20, _m.u20);
-    DLOG("%10s %12e %12e", "u30", m.mu30, _m.u30);
-    DLOG("");
-    DLOG("%10s %12.8f %12.8f", "u02", m.nu02, _m.n02);
-    DLOG("%10s %12.8f %12.8f", "u03", m.nu03, _m.n03);
-    DLOG("%10s %12.8f %12.8f", "u11", m.nu11, _m.n11);
-    DLOG("%10s %12.8f %12.8f", "u12", m.nu12, _m.n12);
-    DLOG("%10s %12.8f %12.8f", "u21", m.nu21, _m.n21);
-    DLOG("%10s %12.8f %12.8f", "u20", m.nu20, _m.n20);
-    DLOG("%10s %12.8f %12.8f", "u30", m.nu30, _m.n30);
-    DLOG("");
-    DLOG("%10s %12.8f %12.8f", "hu[0]", hu[0], _hu[0]);
-    DLOG("%10s %12.8f %12.8f", "hu[1]", hu[1], _hu[1]);
-    DLOG("%10s %12.8f %12.8f", "hu[2]", hu[2], _hu[2]);
-    DLOG("%10s %12.8f %12.8f", "hu[3]", hu[3], _hu[3]);
-    DLOG("%10s %12.8f %12.8f", "hu[4]", hu[4], _hu[4]);
-    DLOG("%10s %12.8f %12.8f", "hu[5]", hu[5], _hu[5]);
-    DLOG("%10s %12.8f %12.8f", "hu[6]", hu[6], _hu[6]);
-    */
-
 
 
     // Display results
