@@ -331,11 +331,18 @@ end:
     return r;
 }
 
-struct _moment imageMoments(Mat &src)
+/**
+ * Calculate moments of an image.
+ *
+ * Calculate moments about zero, about centroid, normalized moments about
+ * centroid, and Hu's moment invariants of an image.
+ *
+ * @param src   Source image.
+ */
+struct _moment imageMoments(const Mat &src)
 {
     DLOG("src    %d x %d", src.size().width, src.size().height);
 
-    assert(src.isContinuous());
     assert(src.channels() == GRAY);
 
     const int rows = src.rows;
@@ -354,39 +361,41 @@ struct _moment imageMoments(Mat &src)
     m.u02 = 0;
     m.u03 = 0;
 
-    int i, j, idx=0;
+    int i, j;
+    const uchar *p;
 
     for (i = 0; i < rows; i++) {
         for (j = 0; j < cols; j++) {
-            m.m00 += src.data[idx];
-            m.m01 += i * src.data[idx];
-            m.m10 += j * src.data[idx];
-            idx++;
+            p = src.ptr<uchar>(i);
+
+            m.m00 += p[j];
+            m.m01 += i * p[j];
+            m.m10 += j * p[j];
         }
     }
 
     if (m.m00 == 0) {
         WLOG("m.m00 == 0");
+        return m;
     }
 
     const float x_bar = m.m10 / m.m00;
     const float y_bar = m.m01 / m.m00;
 
-    idx=0;
     for (i = 0; i < rows; i++) {
         for (j = 0; j < cols; j++) {
             const float x_dist = j - x_bar;
             const float y_dist = i - y_bar;
 
-            m.u02 += pow(y_dist, 2) * src.data[idx];
-            m.u03 += pow(y_dist, 3) * src.data[idx];
-            m.u11 += x_dist * y_dist * src.data[idx];
-            m.u12 += x_dist * pow(y_dist, 2) * src.data[idx];
-            m.u21 += pow(x_dist, 2) * y_dist * src.data[idx];
-            m.u20 += pow(x_dist, 2) * src.data[idx];
-            m.u30 += pow(x_dist, 3) * src.data[idx];
-
-            idx++;
+            // u_ij = (x - x_bar) ^ i * (y - y_bar) ^ j * src[i, j]
+            p = src.ptr<uchar>(i);
+            m.u02 += pow(y_dist, 2) * p[j];
+            m.u03 += pow(y_dist, 3) * p[j];
+            m.u11 += x_dist * y_dist * p[j];
+            m.u12 += x_dist * pow(y_dist, 2) * p[j];
+            m.u21 += pow(x_dist, 2) * y_dist * p[j];
+            m.u20 += pow(x_dist, 2) * p[j];
+            m.u30 += pow(x_dist, 3) * p[j];
         }
     }
 
