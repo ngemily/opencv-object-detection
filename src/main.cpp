@@ -211,7 +211,7 @@ int main(int argc, char** argv )
         putText(src, buf, ofs, FONT_HERSHEY_PLAIN, 1, Scalar::all(255), 1);
     }
 
-    displayImageRow("Hu moments", 1, &src);
+    displayImageRow("Hu moments", 2, &src, &dst_obj);
 
     return 0;
 }

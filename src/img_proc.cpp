@@ -327,6 +327,8 @@ end:
     r.left = left;
     r.right = right;
 
+    // draw bounding box
+    rectangle(dst, Point(left, top), Point(right, bottom), Scalar::all(255));
     DLOG("obj is %d x %d", r.right - r.left, r.bottom - r.top);
 
     return r;
