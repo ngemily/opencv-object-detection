@@ -37,9 +37,9 @@ using namespace cv;
 
 struct _moment{
     // moment about 0
-    float m00;
-    float m10;
-    float m01;
+    double m00;
+    double m10;
+    double m01;
 
     // central moment
     double u02;

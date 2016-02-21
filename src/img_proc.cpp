@@ -360,6 +360,8 @@ struct _moment imageMoments(const Mat &src)
     m.u21 = 0;
     m.u02 = 0;
     m.u03 = 0;
+    m.u20 = 0;
+    m.u30 = 0;
 
     int i, j;
     const uchar *p;
@@ -379,13 +381,13 @@ struct _moment imageMoments(const Mat &src)
         return m;
     }
 
-    const float x_bar = m.m10 / m.m00;
-    const float y_bar = m.m01 / m.m00;
+    const double x_bar = m.m10 / m.m00;
+    const double y_bar = m.m01 / m.m00;
 
     for (i = 0; i < rows; i++) {
         for (j = 0; j < cols; j++) {
-            const float x_dist = j - x_bar;
-            const float y_dist = i - y_bar;
+            const double x_dist = j - x_bar;
+            const double y_dist = i - y_bar;
 
             // u_ij = (x - x_bar) ^ i * (y - y_bar) ^ j * src[i, j]
             p = src.ptr<uchar>(i);
