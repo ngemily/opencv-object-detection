@@ -205,9 +205,6 @@ struct rect extractObject(Mat &src, Mat &dst)
     assert(src.isContinuous());
     assert(dst.isContinuous());
 
-    DLOG("%s", __FUNCTION__);
-    DLOG("src    %d x %d", src.size().width, src.size().height);
-
     int start_x, start_y;
     int top, left, bottom, right;
 
@@ -221,7 +218,6 @@ struct rect extractObject(Mat &src, Mat &dst)
                 dst.data[idx] = WHITE;
                 start_x = j;
                 start_y = i;
-                DLOG("start pixel (%d, %d)", i, j);
                 goto find_bottom_right;
             }
 
@@ -241,7 +237,7 @@ find_bottom_right:
 
         int found_pixel = 0;
         // check col j
-        for (int ii = 0; ii < i; ii++) {
+        for (int ii = start_y; ii < i; ii++) {
             if (src.data[ii * cols + j] == WHITE) {
                 dst.data[i * cols + j] = WHITE;
                 found_pixel = 1;
@@ -251,7 +247,7 @@ find_bottom_right:
         }
 
         // check row i
-        for (int jj = 0; jj < j; jj++) {
+        for (int jj = start_x; jj < j; jj++) {
             if (src.data[i * cols + jj] == WHITE) {
                 dst.data[i * cols + j] = WHITE;
                 found_pixel = 1;
@@ -260,9 +256,11 @@ find_bottom_right:
             }
         }
 
+        if (i == rows || j == cols) {
+            WLOG("at bottom right corner of image");
+        }
         if (!found_pixel || i == rows || j == cols) {
             dst.data[i * cols + j] = WHITE;
-            DLOG("bottom right (%d, %d)", i, j);
             bottom = i;
             right = j;
             goto find_top_left;
@@ -299,11 +297,10 @@ find_top_left:
         }
 
         if (i == 0 || j == 0) {
-            DLOG("out of image");
+            WLOG("at top left corner of image");
         }
         if (!found_pixel || i == 0 || j == 0) {
             dst.data[i * cols + j] = WHITE;
-            DLOG("top left (%d, %d)", i, j);
             top = i;
             left = j;
             goto end;
@@ -314,9 +311,9 @@ find_top_left:
 
 end:
     // Erase from src image.
-    for (int ii = top; ii < bottom; ii++) {
-        for (int jj = left; jj < right; jj++) {
-            idx = ii * cols + jj;
+    for (int i = top; i < bottom; i++) {
+        for (int j = left; j < right; j++) {
+            idx = i * cols + j;
             src.data[idx] = BLACK;
         }
     }

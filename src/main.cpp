@@ -106,19 +106,25 @@ int main(int argc, char** argv )
     /*****      Isolate objects     *******/
     Mat src_obj;    // grayscale and binarize output from edge detection
     Mat dst_obj;    // for debug, draw bounding boxes around objects
-    Mat obj[10];    // put each object in its own Mat
+    Mat obj[99];    // put each object in its own Mat
 
     cvtColor(dst_filter, src_obj, CV_BGR2GRAY, 0);
     threshold(src_obj, src_obj, 50, 255, THRESH_BINARY);
 
     dst_obj = src_obj.clone();
     Mat tmp = src_obj.clone();
+    int i = 0;
+    struct rect r;
 
-    for (int i = 0; i < 10; i++) {
-        struct rect r = extractObject(src_obj, dst_obj);
+    do {
+        r = extractObject(src_obj, dst_obj);
         obj[i] = tmp(Range(r.top, r.bottom), Range(r.left, r.right));
-        //DLOG("obj %d is %d x %d", i, obj[i].cols, obj[i].rows);
-    }
+        i++;
+    } while(r.top != r.bottom && r.left != r.bottom);
+
+    DLOG("Found %d objects.", i);
+
+    //displayImageRow("Extract objects", 2, &src_obj, &dst_obj);
 
     /*****      Isolate color     *******/
     int x;
