@@ -474,3 +474,32 @@ void isolateColor(const Mat &src, const int c, Mat &dst, uchar thresh)
         }
     }
 }
+
+/**
+ * Compare two sets of Hu moments to see if we have a match.
+ *
+ * The two sets of moments are treated the same, i.e. the two arguments are
+ * commutative.
+ *
+ * @param hu1   Reference image's moments.
+ * @param hu2   Sample image's moments.
+ *
+ * @return A number representing how different the two images are.  A value < 50
+ * is a pretty good match.
+ */
+unsigned int compareHu(double *hu1, double *hu2)
+{
+    double r = 0;
+
+    // NB: To investigate: 7th Hu moment makes it  a lot worse.
+    for (int i = 0; i < 6; i++) {
+        double h1 = (hu1[i]);
+        double h2 = (hu2[i]);
+
+        double sq_diff = pow(h2 - h1, 2) / (h1 * h2);
+
+        r += pow(sq_diff, 2);
+    }
+
+    return (unsigned int) r;
+}

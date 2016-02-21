@@ -77,5 +77,6 @@ void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b));
 struct rect extractObject(Mat &src, Mat &dst);
 struct _moment imageMoments(const Mat &src);
 void isolateColor(const Mat &src, const int c, Mat &dst, uchar thresh);
+unsigned int compareHu(double *hu1, double *hu2);
 
 #endif
