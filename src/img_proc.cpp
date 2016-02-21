@@ -495,7 +495,8 @@ unsigned int compareHu(double *hu1, double *hu2)
 {
     double r = 0;
 
-    // NB: To investigate: 7th Hu moment makes it  a lot worse.
+    // NB: The 7th moment is for skew invariance.  At the moment we do not want
+    // to consider it as our shapes can become quite similar if stretched.
     for (int i = 0; i < 6; i++) {
         double h1 = (hu1[i]);
         double h2 = (hu2[i]);
