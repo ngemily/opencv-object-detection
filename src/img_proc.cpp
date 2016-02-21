@@ -21,6 +21,8 @@
  *
  * @param A     reference to one image
  * @param B     reference to another image
+ *
+ * @return      Sum of pixel-wise absolute difference between \p A and \p B.
  */
 unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B)
 {
@@ -194,6 +196,8 @@ void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b))
  *
  * @param src   Binary grayscale image of contours
  * @param dst   Bounding corners drawn.
+ *
+ * @return A rect struct that defines the boundaries of the identified object.
  */
 struct rect extractObject(Mat &src, Mat &dst)
 {
