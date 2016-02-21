@@ -412,7 +412,7 @@ struct _moment imageMoments(const Mat &src)
     m.hu[4] = (m.n30 - 3 * m.n12) * (m.n30 + m.n12)
         * (pow(m.n30 + m.n12, 2) - 3 * pow(m.n21 + m.n03, 2))
         + (3 * m.n21 - m.n03) * (m.n21 + m.n03)
-        * (3 * pow(m.n30 - m.n12, 2) - pow(m.n21 + m.n03, 2));
+        * (3 * pow(m.n30 + m.n12, 2) - pow(m.n21 + m.n03, 2));
     m.hu[5] = (m.n20 - m.n02)
         * (pow(m.n30 + m.n12, 2) - pow(m.n21 + m.n03, 2))
         + 4 * m.n11 * (m.n30 + m.n12) * (m.n21 + m.n03);
