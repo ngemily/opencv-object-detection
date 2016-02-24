@@ -24,7 +24,7 @@ See [Wikipedia][sobel-wiki] for background on the Sobel operator.  See the
 combine x- and y-derivatives is slightly different from that used in the
 tutorial.
 
-The core of it is simply an instance of [kernel-wiki][image kernel] computation,
+The core of it is simply an instance of [image kernel][kernel-wiki] computation,
 which is like convolution in signal processing.  See [this demo][kernel-demo]
 for a concise explanation and live demo.  Image kernels or filters are the basis
 of a diverse set of transformations that can be performed on an image simply by
