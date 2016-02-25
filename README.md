@@ -52,6 +52,15 @@ function is the pixel's intensity.
 Build
 -----
 
+### Requirements
+
+You must have these installed to build this project.
+
+    OpenCV 2.4
+    Cmake
+
+### Build
+
 This project uses CMake to handle the build process.  To build, go to any empty
 directory and run CMake on this directory.  This will generate a Makefile that
 can be used to build the project.
@@ -60,6 +69,15 @@ can be used to build the project.
     cmake ..
     make
 
+### Run
+
 Run it.  There are a number of sample images in the `imgs/` folder.
 
     ./DisplayImage <path to img>
+
+### Build documentation.
+
+This project uses Doxygen for documentation.  Doxygen will generate html and
+latex sources from the source code.
+
+    doxygen Doxyfile
