@@ -10,6 +10,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <opencv2/imgproc.hpp>
 
 #include "img_proc.h"
 

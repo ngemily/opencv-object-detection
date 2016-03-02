@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <opencv2/opencv.hpp>
+#include <opencv2/core.hpp>
 
 #include "debug.h"
 #include "img_proc.h"

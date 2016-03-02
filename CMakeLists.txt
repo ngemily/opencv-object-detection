@@ -7,6 +7,7 @@ project(DisplayImage)
 # Find OpenCV, you may need to set OpenCV_DIR variable
 # to the absolute path to the directory containing OpenCVConfig.cmake file
 # via the command line or GUI
+set (OpenCV_DIR /usr/local/opt/opencv3/share/OpenCV)
 find_package(OpenCV REQUIRED)
 
 # If the package has been found, several variables will
