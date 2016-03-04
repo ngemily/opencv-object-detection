@@ -82,28 +82,26 @@ void convert_to_grayscale(const Mat &src, Mat &dst)
 }
 
 /*****      Sobel edge detection     *******/
+/**
+ * \p src should be a grayscale image
+ */
 void sobel(const Mat &src, Mat &dst)
 {
-    Mat src_gray;
     Mat dst_opencv;
     unsigned int diff;
 
-    cvtColor(src, src_gray, CV_BGR2GRAY, 0);    // OpencV
-
     // Ours
     Mat dst_x, dst_y;
-    applyKernel(src_gray, dst_x, kern_sobel_x);
-    applyKernel(src_gray, dst_y, kern_sobel_y);
+    applyKernel(src, dst_x, kern_sobel_x);
+    applyKernel(src, dst_y, kern_sobel_y);
     combine(dst_x, dst_y, dst, &hypoteneuse);
-    threshold(dst, dst, 150, 255, THRESH_BINARY);
 
     // OpenCV
     Mat tmp_x, tmp_y;
-    filter2D(src_gray, tmp_x, CV_16S, kern_sobel_x);     // x derivative
-    filter2D(src_gray, tmp_y, CV_16S, kern_sobel_y);     // y derivative
+    filter2D(src, tmp_x, CV_16S, kern_sobel_x);     // x derivative
+    filter2D(src, tmp_y, CV_16S, kern_sobel_y);     // y derivative
     addWeighted(tmp_x, 0.5, tmp_y, 0.5, 0, dst_opencv); // combine
     convertScaleAbs(dst_opencv, dst_opencv);        // back to CV_8U
-    threshold(dst_opencv, dst_opencv, 150, 255, THRESH_BINARY);
 
     // Compare
     diff = sumOfAbsoluteDifferences(dst_opencv, dst);
@@ -113,22 +111,21 @@ void sobel(const Mat &src, Mat &dst)
 }
 
 /*****      Isolate objects     *******/
+/**
+ * Draw rectangles onto \p dst representing bounding boxes.
+ * Return each isolated but unidentified object in an array of objs.
+ */
 int isolate_objects(const Mat &src, Mat &dst, Mat obj[99])
 {
-    Mat src_gray;   // grayscale and binarize output from edge detection
-
-    cvtColor(src, src_gray, CV_BGR2GRAY, 0);
-    threshold(src_gray, src_gray, 50, 255, THRESH_BINARY);
-
-    dst = src_gray.clone();
-    Mat tmp = src_gray.clone();
+    dst = src.clone();
+    Mat tmp = src.clone();
 
     int num_objs = 0;
     int i = 0;
     struct rect r;
     do {
-        r = extractObject(src_gray, dst);
-        obj[i] = tmp(Range(r.top, r.bottom), Range(r.left, r.right));
+        r = extractObject(tmp, dst);        // extractObject  modifies tmp
+        obj[i] = src(Range(r.top, r.bottom), Range(r.left, r.right));
         i++;
     } while(r.top != r.bottom && r.left != r.bottom);
 
@@ -142,13 +139,12 @@ int isolate_objects(const Mat &src, Mat &dst, Mat obj[99])
 }
 
 /*****      Image moments     *******/
-void moment_invariants(const Mat &src)
+/**
+ * Array of objects in obj, number of object num_objs.
+ * Annotate source with calculated moment invariants over each object.
+ */
+void moment_invariants(Mat &src, Mat obj[99], int num_objs)
 {
-    Mat dst;
-    Mat obj[99];
-
-    int num_objs = isolate_objects(src, dst, obj);
-    resetDisplayPosition();
     double *hu_g = (double *)malloc(sizeof(double) * 7 * num_objs);
     for (int i = 0; i < num_objs; i++) {
         // Ours
@@ -221,16 +217,16 @@ void moment_invariants(const Mat &src)
     displayImageRow("Hu moments", 1, &src);
 }
 
+/**
+ * Find connected components in source image.  Re-draw the source image with
+ * each label painted a different color in dst.
+ *
+ * \p src should be a binary image.
+ */
 void connected_components(const Mat &src, Mat &dst)
 {
-    // Sandbox
-    Mat mat_gray, mat_sobel, mat_labels;
-    int labels;
-
-    // Extract outlines in binary image before looking for connected components.
-    sobel(src, mat_sobel);
-    resetDisplayPosition();
-    labels = connectedComponents(mat_sobel, mat_labels);
+    Mat m_labels;
+    int labels = connectedComponents(src, m_labels);
 
     // Connected components labels them 1, 2, 3, ...
     // which basically looks like black.
@@ -245,14 +241,14 @@ void connected_components(const Mat &src, Mat &dst)
     dst = Mat(src.size(), CV_8UC3);
     for(int r = 0; r < dst.rows; ++r){
         for(int c = 0; c < dst.cols; ++c){
-            int label = mat_labels.at<int>(r, c);
+            int label = m_labels.at<int>(r, c);
             Vec3b &pixel = dst.at<Vec3b>(r, c);
             pixel = colors[label];
          }
      }
 
     DLOG("found %d labels", labels);
-    displayImageRow("connected components", 2, &mat_sobel, &dst);
+    displayImageRow("connected components", 2, &src, &dst);
 }
 
 
@@ -260,7 +256,7 @@ int main(int argc, char** argv )
 {
     Mat src;                    // Load source image.
     Mat dst;
-    Mat obj[99];
+    Mat objs[99];
 
     // Check args
     if (argc != 2) {
@@ -283,7 +279,16 @@ int main(int argc, char** argv )
         scanf("%256s", buf);
 
         if (buf[0] == 'c') {
-            connected_components(src, dst);
+            Mat m_gray, m_sobel, m_thresh;
+
+            convert_to_grayscale(src, m_gray);
+            resetDisplayPosition();
+
+            sobel(m_gray, m_sobel);
+            threshold(m_sobel, m_thresh, 150, 255, THRESH_BINARY);
+            resetDisplayPosition();
+
+            connected_components(m_thresh, dst);
         }
         else if (buf[0] == 'i') {
             isolate_color(src);
@@ -292,13 +297,39 @@ int main(int argc, char** argv )
             convert_to_grayscale(src, dst);
         }
         else if (buf[0] == 'm') {
-            moment_invariants(src);
+            Mat m_gray, m_sobel, m_thresh;
+
+            convert_to_grayscale(src, m_gray);
+            resetDisplayPosition();
+
+            sobel(m_gray, m_sobel);
+            threshold(m_sobel, m_thresh, 150, 255, THRESH_BINARY);
+            resetDisplayPosition();
+
+            int num_objs = isolate_objects(m_thresh, dst, objs);
+            resetDisplayPosition();
+
+            moment_invariants(src, objs, num_objs);
         }
         else if (buf[0] == 'o') {
-            isolate_objects(src, dst, obj);
+            Mat m_gray, m_sobel, m_thresh;
+
+            convert_to_grayscale(src, m_gray);
+            resetDisplayPosition();
+
+            sobel(m_gray, m_sobel);
+            threshold(m_sobel, m_thresh, 150, 255, THRESH_BINARY);
+            resetDisplayPosition();
+
+            isolate_objects(m_thresh, dst, objs);
         }
         else if (buf[0] == 's') {
-            sobel(src, dst);
+            Mat m_gray;
+
+            convert_to_grayscale(src, m_gray);
+            resetDisplayPosition();
+
+            sobel(m_gray, dst);
         }
         else if (buf[0] == 'q') {
             break;
