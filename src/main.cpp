@@ -221,10 +221,45 @@ void moment_invariants(const Mat &src)
     displayImageRow("Hu moments", 1, &src);
 }
 
+void connected_components(const Mat &src, Mat &dst)
+{
+    // Sandbox
+    Mat mat_gray, mat_sobel, mat_labels;
+    int labels;
+
+    // Extract outlines in binary image before looking for connected components.
+    sobel(src, mat_sobel);
+    resetDisplayPosition();
+    labels = connectedComponents(mat_sobel, mat_labels);
+
+    // Connected components labels them 1, 2, 3, ...
+    // which basically looks like black.
+    //
+    // Re-label them in different colors.
+    std::vector<Vec3b> colors(labels);
+    colors[0] = Vec3b(0, 0, 0); //background
+    for(int i = 1; i < labels; i++){
+        colors[i] = Vec3b( (rand()&255), (rand()&255), (rand()&255) );
+    }
+
+    dst = Mat(src.size(), CV_8UC3);
+    for(int r = 0; r < dst.rows; ++r){
+        for(int c = 0; c < dst.cols; ++c){
+            int label = mat_labels.at<int>(r, c);
+            Vec3b &pixel = dst.at<Vec3b>(r, c);
+            pixel = colors[label];
+         }
+     }
+
+    DLOG("found %d labels", labels);
+    displayImageRow("connected components", 2, &mat_sobel, &dst);
+}
+
 
 int main(int argc, char** argv )
 {
     Mat src;                    // Load source image.
+    Mat dst;
     Mat obj[99];
 
     // Check args
@@ -240,6 +275,7 @@ int main(int argc, char** argv )
         return -1;
     }
 
+
     // Parse args and perform functions as requested.
     char buf[256];
     for (;;) {
@@ -247,6 +283,9 @@ int main(int argc, char** argv )
         scanf("%256s", buf);
 
         if (buf[0] == 'c') {
+            connected_components(src, dst);
+        }
+        else if (buf[0] == 'i') {
             isolate_color(src);
         }
         else if (buf[0] == 'g') {
@@ -266,7 +305,8 @@ int main(int argc, char** argv )
         }
         else {
                 DLOG("Usage:");
-                DLOG("    c: Isolate color, with threshold trackbar.");
+                DLOG("    c: Find connected components.");
+                DLOG("    i: Isolate color, with threshold trackbar.");
                 DLOG("    g: Convert color to grayscale.");
                 DLOG("    m: Calculate moment invariants.  Annotates source.");
                 DLOG("    o: Isolate objects.  Draws bounding boxes.");
