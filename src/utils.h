@@ -15,5 +15,6 @@ static int y = 0;
 void displayImageRow(const char *window_name, int n, ...);
 static int hypoteneuse(int a, int b) { return sqrt(a * a + b * b); }
 static int average(int a, int b) { return (0.5 * a + 0.5 * b); }
+void resetDisplayPosition();
 
 #endif

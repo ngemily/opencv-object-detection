@@ -64,3 +64,9 @@ void displayImageRow(const char *window_name, int n, ...)
 
     return;
 }
+
+void resetDisplayPosition()
+{
+    x = 0;
+    y = 0;
+};
