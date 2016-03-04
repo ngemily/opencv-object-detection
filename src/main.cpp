@@ -54,73 +54,81 @@ void locate_point_cb(int x, void *data)
 
 using namespace cv;
 
-int main(int argc, char** argv )
+/*****      Isolate color     *******/
+void isolate_color(const Mat &src)
 {
-    Mat src;                    // Load source image.
+    int x;
 
-    // Check args
-    if (argc != 2) {
-        DLOG("usage: DisplayImage.out <Image_Path>");
-        return -1;
-    }
+    displayImageRow("Extract red", 1, &src);
+    createTrackbar("Trackbar", "Extract red 0", &x, 255, locate_point_cb,
+            (void *)&src);
 
-    // Load image
-    src = imread(argv[1], CV_LOAD_IMAGE_COLOR);
-    if (!src.data) {
-        ELOG("No image data.");
-        return -1;
-    }
+    waitKey(0);
+}
 
-    /*****      Convert to grayscale     *******/
-    Mat src_gray, dst_gray;
+/*****      Convert to grayscale     *******/
+void convert_to_grayscale(const Mat &src)
+{
+    Mat dst_opencv, dst;
 
-    rgb2g(src, dst_gray);                       // ours
-    cvtColor(src, src_gray, CV_BGR2GRAY, 0);    // OpencV
+    rgb2g(src, dst);                       // ours
+    cvtColor(src, dst_opencv, CV_BGR2GRAY, 0);    // OpencV
 
     // Compare
-    unsigned int diff = sumOfAbsoluteDifferences(src_gray, dst_gray);
+    unsigned int diff = sumOfAbsoluteDifferences(dst_opencv, dst);
     DLOG("gray abs diff %u", diff);
-    //displayImageRow("Color to gray", 2, &src_gray, &dst_gray);
+    displayImageRow("Color to gray", 2, &dst_opencv, &dst);
 
-    /*****      Sobel edge detection     *******/
-    Mat src_filter, dst_filter;
+}
+
+/*****      Sobel edge detection     *******/
+void sobel(const Mat &src)
+{
+    Mat src_gray;
+    Mat dst_opencv, dst;
+    unsigned int diff;
+
+    cvtColor(src, src_gray, CV_BGR2GRAY, 0);    // OpencV
 
     // Ours
     Mat dst_x, dst_y;
-    applyKernel(src, dst_x, kern_sobel_x);
-    applyKernel(src, dst_y, kern_sobel_y);
-    combine(dst_x, dst_y, dst_filter, &hypoteneuse);
-    threshold(dst_filter, dst_filter, 150, 255, THRESH_BINARY);
+    applyKernel(src_gray, dst_x, kern_sobel_x);
+    applyKernel(src_gray, dst_y, kern_sobel_y);
+    combine(dst_x, dst_y, dst, &hypoteneuse);
+    threshold(dst, dst, 150, 255, THRESH_BINARY);
 
     // OpenCV
     Mat tmp_x, tmp_y;
-    filter2D(src, tmp_x, CV_16S, kern_sobel_x);     // x derivative
-    filter2D(src, tmp_y, CV_16S, kern_sobel_y);     // y derivative
-    addWeighted(tmp_x, 0.5, tmp_y, 0.5, 0, src_filter); // combine
-    convertScaleAbs(src_filter, src_filter);        // back to CV_8U
-    threshold(src_filter, src_filter, 150, 255, THRESH_BINARY);
+    filter2D(src_gray, tmp_x, CV_16S, kern_sobel_x);     // x derivative
+    filter2D(src_gray, tmp_y, CV_16S, kern_sobel_y);     // y derivative
+    addWeighted(tmp_x, 0.5, tmp_y, 0.5, 0, dst_opencv); // combine
+    convertScaleAbs(dst_opencv, dst_opencv);        // back to CV_8U
+    threshold(dst_opencv, dst_opencv, 150, 255, THRESH_BINARY);
 
     // Compare
-    diff = sumOfAbsoluteDifferences(src_filter, dst_filter);
+    diff = sumOfAbsoluteDifferences(dst_opencv, dst);
     DLOG("filter abs diff %u", diff);
-    //displayImageRow("Sobel", 2, &src_filter, &dst_filter);
+    displayImageRow("Sobel", 2, &dst_opencv, &dst);
 
-    /*****      Isolate objects     *******/
-    Mat src_obj;    // grayscale and binarize output from edge detection
-    Mat dst_obj;    // for debug, draw bounding boxes around objects
-    Mat obj[99];    // put each object in its own Mat
+}
 
-    cvtColor(dst_filter, src_obj, CV_BGR2GRAY, 0);
-    threshold(src_obj, src_obj, 50, 255, THRESH_BINARY);
+/*****      Isolate objects     *******/
+int isolate_objects(const Mat &src, Mat obj[99])
+{
+    Mat src_gray;   // grayscale and binarize output from edge detection
+    Mat dst;        // for debug, draw bounding boxes around objects
 
-    dst_obj = src_obj.clone();
-    Mat tmp = src_obj.clone();
+    cvtColor(src, src_gray, CV_BGR2GRAY, 0);
+    threshold(src_gray, src_gray, 50, 255, THRESH_BINARY);
+
+    dst = src_gray.clone();
+    Mat tmp = src_gray.clone();
 
     int num_objs = 0;
     int i = 0;
     struct rect r;
     do {
-        r = extractObject(src_obj, dst_obj);
+        r = extractObject(src_gray, dst);
         obj[i] = tmp(Range(r.top, r.bottom), Range(r.left, r.right));
         i++;
     } while(r.top != r.bottom && r.left != r.bottom);
@@ -129,19 +137,18 @@ int main(int argc, char** argv )
     num_objs = i;
 
     displayImageRow("obj", 5, &obj[0], &obj[1], &obj[2], &obj[3], &obj[4]);
+    displayImageRow("annotated src", 1, &dst);
 
-    /*****      Isolate color     *******/
-    /*
-    int x;
+    return num_objs;
+}
 
-    displayImageRow("Extract red", 1, &src);
-    createTrackbar("Trackbar", "Extract red 0", &x, 255, locate_point_cb,
-            (void *)&src);
+/*****      Image moments     *******/
+void moment_invariants(const Mat &src)
+{
+    Mat obj[99];
 
-    waitKey(0);
-    */
-
-    /*****      Image moments     *******/
+    int num_objs = isolate_objects(src, obj);
+    resetDisplayPosition();
     double *hu_g = (double *)malloc(sizeof(double) * 7 * num_objs);
     for (int i = 0; i < num_objs; i++) {
         // Ours
@@ -211,7 +218,62 @@ int main(int argc, char** argv )
         putText(src, buf, ofs, FONT_HERSHEY_PLAIN, 1, Scalar::all(255), 1);
     }
 
-    displayImageRow("Hu moments", 2, &src, &dst_obj);
+    displayImageRow("Hu moments", 1, &src);
+}
+
+
+int main(int argc, char** argv )
+{
+    Mat src;                    // Load source image.
+    Mat obj[99];
+
+    // Check args
+    if (argc != 2) {
+        DLOG("usage: DisplayImage.out <Image_Path>");
+        return -1;
+    }
+
+    // Load image
+    src = imread(argv[1], CV_LOAD_IMAGE_COLOR);
+    if (!src.data) {
+        ELOG("No image data.");
+        return -1;
+    }
+
+    // Parse args and perform functions as requested.
+    char buf[256];
+    for (;;) {
+        printf("Enter command:\n");
+        scanf("%256s", buf);
+
+        if (buf[0] == 'c') {
+            isolate_color(src);
+        }
+        else if (buf[0] == 'g') {
+            convert_to_grayscale(src);
+        }
+        else if (buf[0] == 'm') {
+            moment_invariants(src);
+        }
+        else if (buf[0] == 'o') {
+            isolate_objects(src, obj);
+        }
+        else if (buf[0] == 's') {
+            sobel(src);
+        }
+        else if (buf[0] == 'q') {
+            break;
+        }
+        else {
+                DLOG("Usage:");
+                DLOG("    c: Isolate color, with threshold trackbar.");
+                DLOG("    g: Convert color to grayscale.");
+                DLOG("    m: Calculate moment invariants.  Annotates source.");
+                DLOG("    o: Isolate objects.  Draws bounding boxes.");
+                DLOG("    s: Apply Sobel operator.");
+        }
+        resetDisplayPosition();
+    }
 
     return 0;
 }
