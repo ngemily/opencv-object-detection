@@ -511,3 +511,125 @@ unsigned int compareHu(double *hu1, double *hu2)
 
     return (unsigned int) r;
 }
+
+/**
+ * Connected components labeling.
+ *
+ * @param src   Source (binary) image.
+ * @param dst   Each connected component replaced with label.
+ * @return Number of components found.
+ */
+unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
+{
+    assert(src.isContinuous());
+    assert(src.channels() == GRAY);
+
+    dst = Mat::zeros(src.size(), src.type());
+
+    assert(dst.isContinuous());
+
+    const int rows = src.rows;
+    const int cols = src.cols;
+
+    int num_labels = 0;
+    int merge_table[1024];
+
+
+    int i, j, idx=cols;
+
+    // Initialize merge table.
+    for (i = 0; i < 1024; i++) {
+        merge_table[i] = -1;
+    }
+
+    // First pass.
+    for (i = 1; i < rows - 1; i++) {
+        for (j = 1; j < cols - 1; j++) {
+            idx = i * cols + j;
+
+            int a_idx = (i - 1) * cols + j - 1;
+            int b_idx = (i - 1) * cols + j - 0;
+            int c_idx = (i - 1) * cols + j + 1;
+            int d_idx = i * cols + j -1;
+
+            // 8-connected neighbours that have already been processed.
+            uchar a = dst.data[a_idx];
+            uchar b = dst.data[b_idx];
+            uchar c = dst.data[c_idx];
+            uchar d = dst.data[d_idx];
+
+            // pixel to process
+            uchar p = src.data[idx];
+
+            // Construct a mask.
+            //
+            // A number or'd with zero is itself.
+            // A number or'd with itself is itself.
+            uchar mask = a | b | c | d;
+
+            // Determine label
+            //
+            // Background, no need to label.
+            if (p == BLACK) {
+                continue;
+            }
+            // Neighbours are background, make a new label.
+            else if (mask == BLACK) {
+                num_labels++;
+                dst.data[idx] = num_labels;
+            }
+            // Check for single label.
+            else if (mask == a) {
+                dst.data[idx] = dst.data[a_idx];
+            }
+            else if (mask == b) {
+                dst.data[idx] = dst.data[b_idx];
+            }
+            else if (mask == c) {
+                dst.data[idx] = dst.data[c_idx];
+            }
+            else if (mask == d) {
+                dst.data[idx] = dst.data[d_idx];
+            }
+            // Two or more labels have been found.  Need to merge.
+            // First update merge table.
+            else {
+                uchar min = -1;
+
+                min = (a != 0 && a < min) ? a : min;
+                min = (b != 0 && b < min) ? b : min;
+                min = (c != 0 && c < min) ? c : min;
+                min = (d != 0 && d < min) ? d : min;
+
+                if (a != 0 && a != min) {
+                    merge_table[a] = min;
+                }
+                if (b != 0 && b != min) {
+                    merge_table[b] = min;
+                }
+                if (c != 0 && c != min) {
+                    merge_table[c] = min;
+                }
+                if (d != 0 && d != min) {
+                    merge_table[d] = min;
+                }
+                DLOG("merge! %u %u %u %u min: %u", a, b, c, d, min);
+            }
+        }
+    }
+
+    // Run through again and update using merge table.
+    for (i = 1; i < rows - 1; i++) {
+        for (j = 1; j < cols - 1; j++) {
+            idx = i * cols + j;
+            uchar label = dst.data[idx];
+            if (merge_table[label] != -1) {
+                dst.data[idx] = merge_table[label];
+            }
+        }
+    }
+
+    DLOG("Found %d labels", num_labels);
+
+    return num_labels;
+}

@@ -7,6 +7,7 @@
  */
 
 #include <assert.h>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <opencv2/core.hpp>
@@ -225,30 +226,56 @@ void moment_invariants(Mat &src, Mat obj[99], int num_objs)
  */
 void connected_components(const Mat &src, Mat &dst)
 {
-    Mat m_labels;
-    int labels = connectedComponents(src, m_labels);
+    Mat m_labels, m_labels_opencv;
+    Mat dst_opencv;
+    unsigned int  num_labels;
 
-    // Connected components labels them 1, 2, 3, ...
+    unsigned int opencv_labels = connectedComponents(src, m_labels_opencv);
+    unsigned int labels = connectedComponentsLabeling(src, m_labels);
+
+    num_labels = (opencv_labels > labels) ? opencv_labels : labels;
+    DLOG("my labels %d", labels);
+    DLOG("opencv_labels %d", opencv_labels);
+    DLOG("num labels %d", num_labels);
+
+    // Connected components labels objects 1, 2, 3, ...
     // which basically looks like black.
     //
-    // Re-label them in different colors.
-    std::vector<Vec3b> colors(labels);
+    // Paint them in different colors.
+    std::vector<Vec3b> colors(num_labels);
     colors[0] = Vec3b(0, 0, 0); //background
-    for(int i = 1; i < labels; i++){
+    for(unsigned int i = 1; i < num_labels; i++){
         colors[i] = Vec3b( (rand()&255), (rand()&255), (rand()&255) );
     }
+    DLOG("num colors %lu", colors.size());
 
+    dst_opencv = Mat(src.size(), CV_8UC3);
     dst = Mat(src.size(), CV_8UC3);
-    for(int r = 0; r < dst.rows; ++r){
-        for(int c = 0; c < dst.cols; ++c){
-            int label = m_labels.at<int>(r, c);
-            Vec3b &pixel = dst.at<Vec3b>(r, c);
+
+    for(int r = 0; r < dst.rows; r++){
+        for(int c = 0; c < dst.cols; c++){
+            uchar label = m_labels_opencv.at<int>(r, c);
+            Vec3b &pixel = dst_opencv.at<Vec3b>(r, c);
             pixel = colors[label];
          }
      }
 
-    DLOG("found %d labels", labels);
-    displayImageRow("connected components", 2, &src, &dst);
+    const int rows = m_labels.rows;
+    const int cols = m_labels.cols;
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            int idx = i * cols + j;
+            int rgb_idx = i * cols * 3 + j * 3;
+            uchar label = m_labels.data[idx];
+            dst.data[rgb_idx + 0] = colors[label].val[2];
+            dst.data[rgb_idx + 1] = colors[label].val[1];
+            dst.data[rgb_idx + 2] = colors[label].val[0];
+        }
+    }
+
+    DLOG("found %d num_labels", num_labels);
+    displayImageRow("connected components", 2, &dst_opencv, &dst);
 }
 
 
