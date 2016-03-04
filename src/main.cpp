@@ -67,9 +67,9 @@ void isolate_color(const Mat &src)
 }
 
 /*****      Convert to grayscale     *******/
-void convert_to_grayscale(const Mat &src)
+void convert_to_grayscale(const Mat &src, Mat &dst)
 {
-    Mat dst_opencv, dst;
+    Mat dst_opencv;
 
     rgb2g(src, dst);                       // ours
     cvtColor(src, dst_opencv, CV_BGR2GRAY, 0);    // OpencV
@@ -82,10 +82,10 @@ void convert_to_grayscale(const Mat &src)
 }
 
 /*****      Sobel edge detection     *******/
-void sobel(const Mat &src)
+void sobel(const Mat &src, Mat &dst)
 {
     Mat src_gray;
-    Mat dst_opencv, dst;
+    Mat dst_opencv;
     unsigned int diff;
 
     cvtColor(src, src_gray, CV_BGR2GRAY, 0);    // OpencV
@@ -113,10 +113,9 @@ void sobel(const Mat &src)
 }
 
 /*****      Isolate objects     *******/
-int isolate_objects(const Mat &src, Mat obj[99])
+int isolate_objects(const Mat &src, Mat &dst, Mat obj[99])
 {
     Mat src_gray;   // grayscale and binarize output from edge detection
-    Mat dst;        // for debug, draw bounding boxes around objects
 
     cvtColor(src, src_gray, CV_BGR2GRAY, 0);
     threshold(src_gray, src_gray, 50, 255, THRESH_BINARY);
@@ -145,9 +144,10 @@ int isolate_objects(const Mat &src, Mat obj[99])
 /*****      Image moments     *******/
 void moment_invariants(const Mat &src)
 {
+    Mat dst;
     Mat obj[99];
 
-    int num_objs = isolate_objects(src, obj);
+    int num_objs = isolate_objects(src, dst, obj);
     resetDisplayPosition();
     double *hu_g = (double *)malloc(sizeof(double) * 7 * num_objs);
     for (int i = 0; i < num_objs; i++) {
@@ -250,16 +250,16 @@ int main(int argc, char** argv )
             isolate_color(src);
         }
         else if (buf[0] == 'g') {
-            convert_to_grayscale(src);
+            convert_to_grayscale(src, dst);
         }
         else if (buf[0] == 'm') {
             moment_invariants(src);
         }
         else if (buf[0] == 'o') {
-            isolate_objects(src, obj);
+            isolate_objects(src, dst, obj);
         }
         else if (buf[0] == 's') {
-            sobel(src);
+            sobel(src, dst);
         }
         else if (buf[0] == 'q') {
             break;
