@@ -55,7 +55,7 @@ unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B)
  * @param src   source image
  * @param dst   dest image
  */
-void rgb2g(Mat &src, Mat &dst)
+void rgb2g(const Mat &src, Mat &dst)
 {
     // intensity = 0.2989*red + 0.5870*green + 0.1140*blue
     const int rows = src.rows;
@@ -91,7 +91,7 @@ void rgb2g(Mat &src, Mat &dst)
  * @param dst       dest image
  * @param kernel    kernel
  */
-void applyKernel(Mat &src, Mat &dst, const Mat &kernel)
+void applyKernel(const Mat &src, Mat &dst, const Mat &kernel)
 {
     DLOG("kernel %d x %d", kernel.size().width, kernel.size().height);
     DLOG("src    %d x %d", src.size().width, src.size().height);

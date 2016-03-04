@@ -71,8 +71,8 @@ struct rect {
 };
 
 unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B);
-void rgb2g(Mat &src, Mat &dst);
-void applyKernel(Mat &src, Mat &dst, const Mat &kernel);
+void rgb2g(const Mat &src, Mat &dst);
+void applyKernel(const Mat &src, Mat &dst, const Mat &kernel);
 void combine(Mat &A, Mat &B, Mat &C, int (*fp)(int a, int b));
 struct rect extractObject(Mat &src, Mat &dst);
 struct _moment imageMoments(const Mat &src);
