@@ -33,3 +33,10 @@ add_executable(DisplayImage ${SRC})
 
 # Link your application with OpenCV libraries
 target_link_libraries(DisplayImage ${OpenCV_LIBS})
+
+# Unset to not display images
+# `cmake -DDISP=0 <path>` to unset
+IF (NOT DEFINED DISP)
+    SET(DISP 1)
+ENDIF()
+ADD_DEFINITIONS(-DDISP=${DISP})

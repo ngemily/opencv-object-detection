@@ -4,7 +4,8 @@
 #include <math.h>
 #include <opencv2/opencv.hpp>
 
-#define DISP 1          // Toggle display of images.
+// NB: to toggle display of images, see CMakeLists.txt
+//#define DISP 0          // Toggle display of images.
 #define PADDING 20      // Padding between images.
 
 using namespace cv;
