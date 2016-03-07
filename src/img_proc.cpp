@@ -561,12 +561,6 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
             // pixel to process
             uchar p = src.data[idx];
 
-            // Construct a mask.
-            //
-            // A number or'd with zero is itself.
-            // A number or'd with itself is itself.
-            uchar mask = a | b | c | d;
-
             // Determine label
             //
             // Background, no need to label.
@@ -574,27 +568,40 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
                 continue;
             }
             // Neighbours are background, make a new label.
-            else if (mask == BLACK) {
+            else if ((a | b | c | d) == BLACK) {
                 num_labels++;
                 dst.data[idx] = num_labels;
             }
             // Check for single label.
-            else if (mask == a) {
+            else if ((a == b || b == BLACK)
+                    && (a == c || c == BLACK)
+                    && (a == d || d == BLACK)) {
+                DLOG("%u %u %u %u : a", a, b, c, d);
                 dst.data[idx] = dst.data[a_idx];
             }
-            else if (mask == b) {
+            else if ((b == a || a == BLACK)
+                    && (b == c || c == BLACK)
+                    && (b == d || d == BLACK)) {
+                DLOG("%u %u %u %u : b", a, b, c, d);
                 dst.data[idx] = dst.data[b_idx];
             }
-            else if (mask == c) {
+            else if ((c == b || b == BLACK)
+                    && (c == a || a == BLACK)
+                    && (c == d || d == BLACK)) {
+                DLOG("%u %u %u %u : c", a, b, c, d);
                 dst.data[idx] = dst.data[c_idx];
             }
-            else if (mask == d) {
+            else if ((d == b || b == BLACK)
+                    && (d == c || c == BLACK)
+                    && (d == a || a == BLACK)) {
+                DLOG("%u %u %u %u : d", a, b, c, d);
                 dst.data[idx] = dst.data[d_idx];
             }
             // Two or more labels have been found.  Need to merge.
             // First update merge table.
             else {
-                uchar min = -1;
+                uchar min = -1;         // target
+                uchar label;            // index
 
                 min = (a != 0 && a < min) ? a : min;
                 min = (b != 0 && b < min) ? b : min;
