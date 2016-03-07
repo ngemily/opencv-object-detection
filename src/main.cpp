@@ -48,7 +48,7 @@ void locate_point_cb(int x, void *data)
     // Draw a small blue circle at the centroid to visually identify it.
     circle(red, Point(xbar, ybar), 3, Scalar(255, 0, 0), -1);
 
-    DLOG("Threshold %d\t Centroid (%d, %d)", x, xbar, ybar);
+    ILOG("Threshold %d\t Centroid (%d, %d)", x, xbar, ybar);
 
     imshow("Extract red 0", red);
 }
@@ -77,7 +77,7 @@ void convert_to_grayscale(const Mat &src, Mat &dst)
 
     // Compare
     unsigned int diff = sumOfAbsoluteDifferences(dst_opencv, dst);
-    DLOG("gray abs diff %u", diff);
+    ILOG("gray abs diff %u", diff);
     displayImageRow("Color to gray", 2, &dst_opencv, &dst);
 
 }
@@ -106,7 +106,7 @@ void sobel(const Mat &src, Mat &dst)
 
     // Compare
     diff = sumOfAbsoluteDifferences(dst_opencv, dst);
-    DLOG("filter abs diff %u", diff);
+    ILOG("filter abs diff %u", diff);
     displayImageRow("Sobel", 2, &dst_opencv, &dst);
 
 }
@@ -130,7 +130,7 @@ int isolate_objects(const Mat &src, Mat &dst, Mat obj[99])
         i++;
     } while(r.top != r.bottom && r.left != r.bottom);
 
-    DLOG("Found %d objects.", i);
+    ILOG("Found %d objects.", i);
     num_objs = i;
 
     displayImageRow("obj", 5, &obj[0], &obj[1], &obj[2], &obj[3], &obj[4]);
@@ -164,41 +164,41 @@ void moment_invariants(Mat &src, Mat obj[99], int num_objs)
 
         /*
         double *_hu = (double *)&_m.hu;
-        DLOG("Image moments");
-        DLOG("%10s %12s %12s", "", "OpenCV", "custom");
-        DLOG("%10s %12.0f %12.0f", "m00", m.m00, _m.m00);
-        DLOG("%10s %12.3f %12.3f", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
-        DLOG("%10s %12.3f %12.3f", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
-        DLOG("");
+        ILOG("Image moments");
+        ILOG("%10s %12s %12s", "", "OpenCV", "custom");
+        ILOG("%10s %12.0f %12.0f", "m00", m.m00, _m.m00);
+        ILOG("%10s %12.3f %12.3f", "xbar", m.m01 / m.m00, _m.m01 / _m.m00);
+        ILOG("%10s %12.3f %12.3f", "ybar", m.m10 / m.m00, _m.m10 / _m.m00);
+        ILOG("");
 
-        DLOG("central moments");
-        DLOG("%10s %12e %12e", "u02", m.mu02, _m.u02);
-        DLOG("%10s %12e %12e", "u03", m.mu03, _m.u03);
-        DLOG("%10s %12e %12e", "u11", m.mu11, _m.u11);
-        DLOG("%10s %12e %12e", "u12", m.mu12, _m.u12);
-        DLOG("%10s %12e %12e", "u21", m.mu21, _m.u21);
-        DLOG("%10s %12e %12e", "u20", m.mu20, _m.u20);
-        DLOG("%10s %12e %12e", "u30", m.mu30, _m.u30);
-        DLOG("");
+        ILOG("central moments");
+        ILOG("%10s %12e %12e", "u02", m.mu02, _m.u02);
+        ILOG("%10s %12e %12e", "u03", m.mu03, _m.u03);
+        ILOG("%10s %12e %12e", "u11", m.mu11, _m.u11);
+        ILOG("%10s %12e %12e", "u12", m.mu12, _m.u12);
+        ILOG("%10s %12e %12e", "u21", m.mu21, _m.u21);
+        ILOG("%10s %12e %12e", "u20", m.mu20, _m.u20);
+        ILOG("%10s %12e %12e", "u30", m.mu30, _m.u30);
+        ILOG("");
         */
 
         /*
-        DLOG("normalized central moments");
-        DLOG("%10s %12.8f %12.8f", "n02", m.nu02, _m.n02);
-        DLOG("%10s %12.8f %12.8f", "n03", m.nu03, _m.n03);
-        DLOG("%10s %12.8f %12.8f", "n11", m.nu11, _m.n11);
-        DLOG("%10s %12.8f %12.8f", "n12", m.nu12, _m.n12);
-        DLOG("%10s %12.8f %12.8f", "n21", m.nu21, _m.n21);
-        DLOG("%10s %12.8f %12.8f", "n20", m.nu20, _m.n20);
-        DLOG("%10s %12.8f %12.8f", "n30", m.nu30, _m.n30);
-        DLOG("");
+        ILOG("normalized central moments");
+        ILOG("%10s %12.8f %12.8f", "n02", m.nu02, _m.n02);
+        ILOG("%10s %12.8f %12.8f", "n03", m.nu03, _m.n03);
+        ILOG("%10s %12.8f %12.8f", "n11", m.nu11, _m.n11);
+        ILOG("%10s %12.8f %12.8f", "n12", m.nu12, _m.n12);
+        ILOG("%10s %12.8f %12.8f", "n21", m.nu21, _m.n21);
+        ILOG("%10s %12.8f %12.8f", "n20", m.nu20, _m.n20);
+        ILOG("%10s %12.8f %12.8f", "n30", m.nu30, _m.n30);
+        ILOG("");
 
-        DLOG("Hu moments");
-        DLOG("%10s %12s %12s", "", "OpenCV", "custom");
+        ILOG("Hu moments");
+        ILOG("%10s %12s %12s", "", "OpenCV", "custom");
         for (int i = 0; i < 7; i++) {
-            DLOG("hu[%d] %+33.32f %+33.32f", i, hu[i], _hu[i]);
+            ILOG("hu[%d] %+33.32f %+33.32f", i, hu[i], _hu[i]);
         }
-        DLOG("");
+        ILOG("");
         */
 
         unsigned int r = compareHu(&hu_g[0], &hu_g[7 * i]);
@@ -234,9 +234,9 @@ void connected_components(const Mat &src, Mat &dst)
     unsigned int labels = connectedComponentsLabeling(src, m_labels);
 
     num_labels = (opencv_labels > labels) ? opencv_labels : labels;
-    DLOG("my labels %d", labels);
-    DLOG("opencv_labels %d", opencv_labels);
-    DLOG("num labels %d", num_labels);
+    ILOG("my labels %d", labels);
+    ILOG("opencv_labels %d", opencv_labels);
+    ILOG("num labels %d", num_labels);
 
     // Connected components labels objects 1, 2, 3, ...
     // which basically looks like black.
@@ -247,7 +247,7 @@ void connected_components(const Mat &src, Mat &dst)
     for(unsigned int i = 1; i < num_labels; i++){
         colors[i] = Vec3b( (rand()&255), (rand()&255), (rand()&255) );
     }
-    DLOG("num colors %lu", colors.size());
+    ILOG("num colors %lu", colors.size());
 
     dst_opencv = Mat(src.size(), CV_8UC3);
     dst = Mat(src.size(), CV_8UC3);
@@ -274,7 +274,7 @@ void connected_components(const Mat &src, Mat &dst)
         }
     }
 
-    DLOG("found %d num_labels", num_labels);
+    ILOG("found %d num_labels", num_labels);
     displayImageRow("connected components", 2, &dst_opencv, &dst);
 }
 
@@ -287,7 +287,7 @@ int main(int argc, char** argv )
 
     // Check args
     if (argc != 2) {
-        DLOG("usage: DisplayImage.out <Image_Path>");
+        ILOG("usage: DisplayImage.out <Image_Path>");
         return -1;
     }
 
@@ -362,13 +362,13 @@ int main(int argc, char** argv )
             break;
         }
         else {
-                DLOG("Usage:");
-                DLOG("    c: Find connected components.");
-                DLOG("    i: Isolate color, with threshold trackbar.");
-                DLOG("    g: Convert color to grayscale.");
-                DLOG("    m: Calculate moment invariants.  Annotates source.");
-                DLOG("    o: Isolate objects.  Draws bounding boxes.");
-                DLOG("    s: Apply Sobel operator.");
+                ILOG("Usage:");
+                ILOG("    c: Find connected components.");
+                ILOG("    i: Isolate color, with threshold trackbar.");
+                ILOG("    g: Convert color to grayscale.");
+                ILOG("    m: Calculate moment invariants.  Annotates source.");
+                ILOG("    o: Isolate objects.  Draws bounding boxes.");
+                ILOG("    s: Apply Sobel operator.");
         }
         resetDisplayPosition();
     }

@@ -46,7 +46,7 @@ unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B)
         }
     }
 
-    DLOG("absdiff %f", sum / (float) (rows * cols * num_channels));
+    ILOG("absdiff %f", sum / (float) (rows * cols * num_channels));
     return sum;
 }
 
@@ -93,9 +93,9 @@ void rgb2g(const Mat &src, Mat &dst)
  */
 void applyKernel(const Mat &src, Mat &dst, const Mat &kernel)
 {
-    DLOG("kernel %d x %d", kernel.size().width, kernel.size().height);
-    DLOG("src    %d x %d", src.size().width, src.size().height);
-    DLOG("dst    %d x %d", dst.size().width, dst.size().height);
+    ILOG("kernel %d x %d", kernel.size().width, kernel.size().height);
+    ILOG("src    %d x %d", src.size().width, src.size().height);
+    ILOG("dst    %d x %d", dst.size().width, dst.size().height);
 
     const int rows = src.size().height;
     const int cols = src.size().width;
@@ -110,7 +110,7 @@ void applyKernel(const Mat &src, Mat &dst, const Mat &kernel)
 
     int i, j;
 
-    DLOG("Kernel:");
+    ILOG("Kernel:");
     const char *k = (char *)kernel.data;
     for (i = 0; i < kernel.rows * kernel.cols; i++) {
         printf("%4d ", k[i]);
@@ -231,7 +231,7 @@ struct rect extractObject(Mat &src, Mat &dst)
     }
 
     // Did not find any white pixels.
-    DLOG("empty image");
+    ILOG("empty image");
     return r;
 
     // Inch forwards diagonally until no more pixels
@@ -330,7 +330,7 @@ end:
 
     // draw bounding box
     rectangle(dst, Point(left, top), Point(right, bottom), Scalar::all(255));
-    DLOG("obj is %d x %d", r.right - r.left, r.bottom - r.top);
+    ILOG("obj is %d x %d", r.right - r.left, r.bottom - r.top);
 
     return r;
 }
@@ -457,7 +457,7 @@ void isolateColor(const Mat &src, const int c, Mat &dst, uchar thresh)
     const int cols = src.cols;
     const int num_channels = src.channels();
 
-    DLOG("isolating channel %d", c);
+    ILOG("isolating channel %d", c);
 
     int i, j, idx=0;
     for (i = 0; i < rows; i++) {
@@ -613,7 +613,7 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
                 if (d != 0 && d != min) {
                     merge_table[d] = min;
                 }
-                DLOG("merge! %u %u %u %u min: %u", a, b, c, d, min);
+                ILOG("merge! %u %u %u %u min: %u", a, b, c, d, min);
             }
         }
     }
@@ -629,7 +629,7 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
         }
     }
 
-    DLOG("Found %d labels", num_labels);
+    ILOG("Found %d labels", num_labels);
 
     return num_labels;
 }
