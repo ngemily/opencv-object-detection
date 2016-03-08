@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stack>
 #include <stdio.h>
 #include <stdlib.h>
 #include <opencv2/imgproc.hpp>
@@ -527,6 +528,7 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
     dst = Mat::zeros(src.size(), src.type());
 
     assert(dst.isContinuous());
+    assert(dst.channels() == GRAY);
 
     const int rows = src.rows;
     const int cols = src.cols;
@@ -538,12 +540,11 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
     int i, j, idx=cols;
 
     // Initialize merge table.
-    for (i = 0; i < 1024; i++) {
-        merge_table[i] = -1;
-    }
+    merge_table[0] = 0;
 
     // First pass.
     for (i = 1; i < rows - 1; i++) {
+        std::stack<struct merge_entry> merge_stack;
         for (j = 1; j < cols - 1; j++) {
             idx = i * cols + j;
 
@@ -571,6 +572,7 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
             else if ((a | b | c | d) == BLACK) {
                 num_labels++;
                 dst.data[idx] = num_labels;
+                merge_table[num_labels] = num_labels;
             }
             // Check for single label.
             else if ((a == b || b == BLACK)
@@ -601,7 +603,6 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
             // First update merge table.
             else {
                 uchar min = -1;         // target
-                uchar label;            // index
 
                 min = (a != 0 && a < min) ? a : min;
                 min = (b != 0 && b < min) ? b : min;
@@ -609,20 +610,42 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
                 min = (d != 0 && d < min) ? d : min;
 
                 if (a != 0 && a != min) {
-                    merge_table[a] = min;
+                    struct merge_entry entry = {.index = a, .target = min};
+                    merge_stack.push(entry);
                 }
                 if (b != 0 && b != min) {
-                    merge_table[b] = min;
+                    struct merge_entry entry = {.index = b, .target = min};
+                    merge_stack.push(entry);
                 }
                 if (c != 0 && c != min) {
-                    merge_table[c] = min;
+                    struct merge_entry entry = {.index = c, .target = min};
+                    merge_stack.push(entry);
                 }
                 if (d != 0 && d != min) {
-                    merge_table[d] = min;
+                    struct merge_entry entry = {.index = d, .target = min};
+                    merge_stack.push(entry);
                 }
                 ILOG("merge! %u %u %u %u min: %u", a, b, c, d, min);
+
             }
         }
+
+        // Resolve merges for this row
+        while (!merge_stack.empty()) {
+            struct merge_entry entry = merge_stack.top();
+            int index = entry.index;
+            int target = entry.target;
+
+            merge_table[index] = merge_table[target];
+
+            merge_stack.pop();
+        }
+
+        // Update labels in this row before we process the next row
+        for (int j = 1; j < (cols - 1); j++) {
+            idx = (i - 1) * cols + j;
+            dst.data[idx] = merge_table[dst.data[idx]];
+        };
     }
 
     // Run through again and update using merge table.

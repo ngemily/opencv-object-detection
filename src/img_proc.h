@@ -70,6 +70,11 @@ struct rect {
     int right;
 };
 
+struct merge_entry {
+    int index;
+    int target;
+};
+
 unsigned int sumOfAbsoluteDifferences(Mat &A, Mat &B);
 void rgb2g(const Mat &src, Mat &dst);
 void applyKernel(const Mat &src, Mat &dst, const Mat &kernel);
