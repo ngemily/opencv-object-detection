@@ -40,3 +40,10 @@ IF (NOT DEFINED DISP)
     SET(DISP 1)
 ENDIF()
 ADD_DEFINITIONS(-DDISP=${DISP})
+
+# Set to display debug messages.
+# `cmake -DDEBUG=0 <path>` to set
+IF (NOT DEFINED DEBUG)
+    SET(DEBUG 0)
+ENDIF()
+ADD_DEFINITIONS(-DDEBUG=${DEBUG})
