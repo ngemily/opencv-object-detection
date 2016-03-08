@@ -578,26 +578,27 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
             else if ((a == b || b == BLACK)
                     && (a == c || c == BLACK)
                     && (a == d || d == BLACK)) {
-                DLOG("%u %u %u %u : a", a, b, c, d);
-                dst.data[idx] = dst.data[a_idx];
+                DLOG("%u %u %u %u : a -> %u", a, b, c, d, merge_table[a]);
+                dst.data[idx] = merge_table[dst.data[a_idx]];
             }
             else if ((b == a || a == BLACK)
                     && (b == c || c == BLACK)
                     && (b == d || d == BLACK)) {
                 DLOG("%u %u %u %u : b", a, b, c, d);
-                dst.data[idx] = dst.data[b_idx];
+                DLOG("%u %u %u %u : c -> %u", a, b, c, d, merge_table[b]);
+                dst.data[idx] = merge_table[dst.data[b_idx]];
             }
             else if ((c == b || b == BLACK)
                     && (c == a || a == BLACK)
                     && (c == d || d == BLACK)) {
-                DLOG("%u %u %u %u : c", a, b, c, d);
-                dst.data[idx] = dst.data[c_idx];
+                DLOG("%u %u %u %u : c -> %u", a, b, c, d, merge_table[c]);
+                dst.data[idx] = merge_table[dst.data[c_idx]];
             }
             else if ((d == b || b == BLACK)
                     && (d == c || c == BLACK)
                     && (d == a || a == BLACK)) {
-                DLOG("%u %u %u %u : d", a, b, c, d);
-                dst.data[idx] = dst.data[d_idx];
+                DLOG("%u %u %u %u : d -> %u", a, b, c, d, merge_table[d]);
+                dst.data[idx] = merge_table[dst.data[d_idx]];
             }
             // Two or more labels have been found.  Need to merge.
             // First update merge table.
@@ -610,42 +611,45 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
                 min = (d != 0 && d < min) ? d : min;
 
                 if (a != 0 && a != min) {
+                    dst.data[a_idx] = min;
                     struct merge_entry entry = {.index = a, .target = min};
                     merge_stack.push(entry);
                 }
                 if (b != 0 && b != min) {
+                    dst.data[b_idx] = min;
                     struct merge_entry entry = {.index = b, .target = min};
                     merge_stack.push(entry);
                 }
                 if (c != 0 && c != min) {
+                    dst.data[c_idx] = min;
                     struct merge_entry entry = {.index = c, .target = min};
                     merge_stack.push(entry);
                 }
                 if (d != 0 && d != min) {
+                    dst.data[d_idx] = min;
                     struct merge_entry entry = {.index = d, .target = min};
                     merge_stack.push(entry);
                 }
-                ILOG("merge! %u %u %u %u min: %u", a, b, c, d, min);
+
+                dst.data[idx] = merge_table[min];
+                DLOG("%u %u %u %u min: %u -> %u", a, b, c, d, min,
+                        merge_table[min]);
 
             }
         }
 
         // Resolve merges for this row
+        DLOG("row %u: merges %lu", i, merge_stack.size());
         while (!merge_stack.empty()) {
             struct merge_entry entry = merge_stack.top();
             int index = entry.index;
             int target = entry.target;
 
+            DLOG("%u -> %u", index, target);
             merge_table[index] = merge_table[target];
 
             merge_stack.pop();
         }
-
-        // Update labels in this row before we process the next row
-        for (int j = 1; j < (cols - 1); j++) {
-            idx = (i - 1) * cols + j;
-            dst.data[idx] = merge_table[dst.data[idx]];
-        };
     }
 
     // Run through again and update using merge table.
@@ -653,11 +657,25 @@ unsigned int connectedComponentsLabeling(const Mat &src, Mat &dst)
         for (j = 1; j < cols - 1; j++) {
             idx = i * cols + j;
             uchar label = dst.data[idx];
-            if (merge_table[label] != -1) {
-                dst.data[idx] = merge_table[label];
-            }
+            dst.data[idx] = merge_table[label];
         }
     }
+
+    FILE *fp = fopen("merge_table.txt", "w");
+    for (int i = 0; i <= num_labels; i++) {
+        fprintf(fp, "%u -> %u\n", i, merge_table[i]);
+    }
+    fclose(fp);
+
+    fp = fopen("labels.txt", "w");
+    for (int i = 1; i < rows - 1; i++) {
+        for (int j = 1; j < rows - 1; j++) {
+            int idx = i * cols + j;
+            fprintf(fp, "%3d, ", dst.data[idx]);
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
 
     ILOG("Found %d labels", num_labels);
 
